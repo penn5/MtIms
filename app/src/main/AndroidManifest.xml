@@ -4,6 +4,7 @@
           coreApp="true"
           android:sharedUserId="android.uid.phone">
 
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <application android:allowBackup="false"
                  android:label="@string/app_name"
                  android:icon="@mipmap/ic_launcher"

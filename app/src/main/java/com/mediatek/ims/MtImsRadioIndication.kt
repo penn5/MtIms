@@ -3,15 +3,11 @@ package com.mediatek.ims
 import android.hardware.radio.V1_0.*
 import android.hardware.radio.V1_1.KeepaliveStatus
 import android.hardware.radio.V1_1.NetworkScanResult
-import android.os.Bundle
 import android.telephony.Rlog
-import android.telephony.ims.ImsCallProfile
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
-import com.android.ims.ImsManager
 import vendor.mediatek.hardware.radio.V2_0.IImsRadioIndication
 import vendor.mediatek.hardware.radio.V2_0.IncomingCallNotification
-import java.util.*
 
 class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub() {
     override fun imsBearerDeactivation(p0: Int, p1: Int, p2: String?) {
@@ -47,8 +43,12 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
         Rlog.v(tag, "onUssi($p0, $p1, $p2, $p3, $p4, $p5, $p6, $p7)")
     }
 
+    @Suppress("UNCHECKED_CAST") // Kotlin doesn't support checking the class in the list, so it raises a warning
+    // but we don't care because it is checked by us.
     override fun callStateChanged(p0: Int) {
         Rlog.v(tag, "callStateChanged($p0)")
+        //TODO
+        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
     override fun suppSvcNotify(p0: Int, p1: SuppSvcNotification?) {
@@ -140,12 +140,10 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
             if (data.size > 0) {
                 val callId = data[0]
                 val msgType = data[1].toInt()
-                val callNumber: String
-                val callMode: Int
-                callMode = if (data[5] == "") 0xFF
+                val callNumber = if (data.size < 7) "" else data[6]
+                val callMode = if (data[5] == "") 0xFF
                 else
                     data[5].toInt()
-                callNumber = if (data.size < 7) "" else data[6]
                 // p1=msgType, p2=callMode, p3=callId, p4=callNumber
 
                 val conference = when (callMode) {
@@ -218,7 +216,7 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun incomingCallIndication(type: Int, call: IncomingCallNotification?) {
         Rlog.d(tag, "incomingCallIndication($type, $call)") // TODO PII
-        call!!.let {
+        /*call!!.let {
             val callSession = MtImsCallSession(
                 mSlotId,
                 ImsCallProfile(ImsCallProfile.SERVICE_TYPE_NORMAL, ImsCallProfile.CALL_TYPE_VOICE),
@@ -231,7 +229,7 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
             data.putString(ImsManager.EXTRA_CALL_ID, callSession.callId)
             data.putBoolean(ImsManager.EXTRA_IS_UNKNOWN_CALL, false)
             MtImsService.instance!!.createMmTelFeature(mSlotId).notifyIncomingCall(callSession, data)
-        }
+        }*/
     }
 
     override fun getProvisionDone(p0: Int, p1: String?, p2: String?) {

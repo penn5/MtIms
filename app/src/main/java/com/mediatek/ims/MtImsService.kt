@@ -1,5 +1,7 @@
 package com.mediatek.ims
 
+import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import android.telephony.ims.ImsService
 import android.telephony.ims.feature.ImsFeature
 import android.telephony.ims.stub.ImsConfigImplBase
@@ -11,9 +13,13 @@ class MtImsService : ImsService() {
     private var mmTelFeatures = arrayOfNulls<MtMmTelFeature>(3)
     private var registrations = arrayOfNulls<MtImsRegistration>(3)
     private var configs = arrayOfNulls<MtImsConfig>(3)
+    internal lateinit var subscriptionManager: SubscriptionManager
+    internal lateinit var telephonyManager: TelephonyManager
 
     override fun onCreate() {
         Log.v(tag, "MtImsService version ${BuildConfig.GIT_HASH} created!")
+        subscriptionManager = getSystemService(SubscriptionManager::class.java)
+        telephonyManager = getSystemService(TelephonyManager::class.java)
     }
 
     override fun onDestroy() {
