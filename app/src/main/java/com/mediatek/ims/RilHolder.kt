@@ -4,15 +4,19 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.hardware.radio.V1_0.RadioResponseInfo
+import android.os.HwBinder
+import android.os.IHwBinder
 import android.os.RemoteException
 import android.util.Log
 import vendor.mediatek.hardware.radio.V1_1.IRadio
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object RilHolder {
 
-    private const val LOG_TAG = "MtImsRilHolder"
+    private const val tag = "MtImsRilHolder"
+    private var serviceBase = "vendor.mediatek.hardware.radio"
+    private val serviceQualifiers = arrayOf("1.1", "2.0", "3.0")
+    private val serviceType = "IRadio"
     private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3", "imsrild4")
     private val responseCallbacks = arrayOfNulls<MtImsRadioResponse>(3)
     private val unsolCallbacks = arrayOfNulls<MtImsRadioIndication>(3)
@@ -23,14 +27,30 @@ object RilHolder {
     private val blocks = ConcurrentHashMap<Int, BlockingCallback>()
 
 
+    private fun getIRadio(serviceName: String): IRadio {
+        var iRadio: IHwBinder? = null
+        for (serviceQualifier in serviceQualifiers) {
+            try {
+                iRadio = HwBinder.getService("$serviceBase@$serviceQualifier::$serviceType", serviceName)
+            } catch (e: NoSuchElementException) {
+                Log.w(tag, "Failed to getService, NoSuchElement, probably its okay because we retry... $e")
+            } catch (e: Throwable) {
+                Log.e(tag, "Failed to getService, unknown exception, shouldn't happen! $e")
+            }
+            if (iRadio != null)
+                return IRadio.asInterface(iRadio)
+        }
+        throw NoSuchElementException()
+    }
+
     @Synchronized
     fun getRadio(slotId: Int): IRadio {
         if (radioImpls[slotId] == null) {
             try {
                 try {
-                    radioImpls[slotId] = IRadio.getService(serviceNames[slotId])
+                    radioImpls[slotId] = getIRadio(serviceNames[slotId])
                 } catch (e: NoSuchElementException) {
-                    Log.e(LOG_TAG, "Index oob in rilholder. Bail Out!!!", e)
+                    Log.e(tag, "Index oob in rilholder. Bail Out!!!", e)
                     val notificationManager = MtImsService.instance!!.getSystemService(NotificationManager::class.java)
                     val channel = NotificationChannel("MtIms", "MtIms", NotificationManager.IMPORTANCE_HIGH)
                     notificationManager.createNotificationChannel(channel)
@@ -49,7 +69,7 @@ object RilHolder {
                 responseCallbacks[slotId] = MtImsRadioResponse(slotId)
                 unsolCallbacks[slotId] = MtImsRadioIndication(slotId)
             } catch (e: RemoteException) {
-                Log.e(LOG_TAG, "remoteexception getting serivce. will throw npe later ig.")
+                Log.e(tag, "remoteexception getting serivce. will throw npe later ig.")
                 throw RuntimeException("Failed to get service due to internal error")
             }
 
@@ -58,7 +78,7 @@ object RilHolder {
             radioImpls[slotId]!!.setResponseFunctions(responseCallbacks[slotId], unsolCallbacks[slotId])
             // As we use imsrild, we don't need to set the mtk one to work
         } catch (e: RemoteException) {
-            Log.e(LOG_TAG, "Failed to update resp functions!")
+            Log.e(tag, "Failed to update resp functions!")
         }
 
         return radioImpls[slotId]!!
@@ -97,7 +117,7 @@ object RilHolder {
         val serial = getNextSerial()
         serialToSlot[serial] = slotId
         callbacks[serial] = cb
-        Log.v(LOG_TAG, "Setting callback for serial $serial")
+        Log.v(tag, "Setting callback for serial $serial")
         return serial
     }
 
@@ -108,7 +128,7 @@ object RilHolder {
 
     fun triggerCB(serial: Int, radioResponseInfo: RadioResponseInfo, vararg args: Any?) {
         Log.e(
-            LOG_TAG,
+            tag,
             "Incoming response for slot " + serialToSlot[serial] + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", args " + args
         )
         if (callbacks.containsKey(serial))
