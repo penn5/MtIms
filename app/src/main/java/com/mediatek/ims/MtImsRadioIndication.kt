@@ -47,7 +47,6 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
     // but we don't care because it is checked by us.
     override fun callStateChanged(p0: Int) {
         Rlog.v(tag, "callStateChanged($p0)")
-        //TODO
         RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
@@ -182,6 +181,7 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
                 }
             }
         }
+        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
     override fun newSmsOnSim(p0: Int, p1: Int) {
@@ -216,20 +216,7 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun incomingCallIndication(type: Int, call: IncomingCallNotification?) {
         Rlog.d(tag, "incomingCallIndication($type, $call)") // TODO PII
-        /*call!!.let {
-            val callSession = MtImsCallSession(
-                mSlotId,
-                ImsCallProfile(ImsCallProfile.SERVICE_TYPE_NORMAL, ImsCallProfile.CALL_TYPE_VOICE),
-                it.callId.toInt(),
-                it.number,
-                false
-            )
-            val data = Bundle()
-            data.putInt(ImsManager.EXTRA_PHONE_ID, mSlotId)
-            data.putString(ImsManager.EXTRA_CALL_ID, callSession.callId)
-            data.putBoolean(ImsManager.EXTRA_IS_UNKNOWN_CALL, false)
-            MtImsService.instance!!.createMmTelFeature(mSlotId).notifyIncomingCall(callSession, data)
-        }*/
+        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
     override fun getProvisionDone(p0: Int, p1: String?, p2: String?) {
@@ -318,7 +305,8 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun volteSetting(p0: Int, p1: Boolean) {
         Rlog.e(tag, "volteSetting($p0, $p1)")
-        //TODO inform the registration that VoLTE registered!
+        if (p1)
+            MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
     }
 
     override fun stkCallControlAlphaNotify(p0: Int, p1: String?) {

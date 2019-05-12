@@ -1,9 +1,12 @@
 package com.mediatek.ims;
 
+import android.annotation.NonNull;
 import android.os.RemoteException;
+import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.feature.CapabilityChangeRequest;
 import android.telephony.ims.feature.MmTelFeature;
+import android.telephony.ims.stub.ImsCallSessionImplBase;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.Log;
 import android.util.SparseArray;
@@ -86,4 +89,34 @@ public class MtMmTelFeature extends MmTelFeature {
             throw new RuntimeException(e);
         }
     }
+
+
+    @Override
+    public ImsCallProfile createCallProfile(int callSessionType, int callType) {
+        if (callSessionType == ImsCallProfile.SERVICE_TYPE_EMERGENCY) {
+            return null;
+        }
+        if (callSessionType == ImsCallProfile.SERVICE_TYPE_NONE) {
+            // Register IMS
+            registerIms();
+        }
+        return new ImsCallProfile(callSessionType, callType);
+        // Is this right?
+    }
+
+    @Override
+    public synchronized ImsCallSessionImplBase createCallSession(@NonNull ImsCallProfile profile) {
+        return new MtImsCallSession(mSlotId, profile);
+    }
+
+    @Override
+    public void onFeatureRemoved() {
+        super.onFeatureRemoved();
+    }
+
+    @Override
+    public void onFeatureReady() {
+        super.onFeatureReady();
+    }
+
 }

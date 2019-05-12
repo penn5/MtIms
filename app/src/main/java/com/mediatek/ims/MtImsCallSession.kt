@@ -2,7 +2,9 @@ package com.mediatek.ims
 
 import android.annotation.SuppressLint
 import android.hardware.radio.V1_0.Call
+import android.hardware.radio.V1_0.Dial
 import android.hardware.radio.V1_0.RadioResponseInfo
+import android.os.RemoteException
 import android.telephony.PhoneNumberUtils
 import android.telephony.Rlog
 import android.telephony.ims.ImsCallProfile
@@ -15,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class MtImsCallSession
 
-/* For outgoing (MO) calls */(val mSlotId: Int, profile: ImsCallProfile) : ImsCallSessionImplBase() {
+/* For outgoing (MO) calls */(private val mSlotId: Int, profile: ImsCallProfile) : ImsCallSessionImplBase() {
     private val mProfile: ImsCallProfile
     private val mLocalProfile: ImsCallProfile
     private val mRemoteProfile: ImsCallProfile
@@ -67,8 +69,7 @@ class MtImsCallSession
             0 // ACTIVE
             -> if (rilImsCall == null) {
                 mState = State.ESTABLISHED
-                if (listener != null)
-                    listener!!.callSessionInitiated(mProfile)
+                listener?.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 2 || // DIALING
 
                 rilImsCall!!.state == 3 || // ALERTING
@@ -78,28 +79,23 @@ class MtImsCallSession
                 rilImsCall!!.state == 5
             ) { // WAITING
                 mState = State.ESTABLISHED
-                if (listener != null)
-                    listener!!.callSessionInitiated(mProfile)
+                listener?.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 1 /* HOLDING */ && !confInProgress) { // HOLDING
-                if (listener != null)
-                    listener!!.callSessionResumed(mProfile)
+                listener?.callSessionResumed(mProfile)
             } else {
                 Rlog.e(tag, "stuff")
             }
             1 // HOLDING
-            -> if (listener != null)
-                listener!!.callSessionHeld(mProfile)
+            -> listener?.callSessionHeld(mProfile)
             2 // DIALING
-            -> if (listener != null)
-                listener!!.callSessionProgressing(ImsStreamMediaProfile())
+            -> listener?.callSessionProgressing(ImsStreamMediaProfile())
             3 // ALERTING
             -> {
                 mState = State.NEGOTIATING
                 if (rilImsCall == null) {
                     Rlog.e(tag, "Alerting an incoming call wtf?")
                 }
-                if (listener != null)
-                    listener!!.callSessionProgressing(ImsStreamMediaProfile())
+                listener?.callSessionProgressing(ImsStreamMediaProfile())
             }
             4 // INCOMING
                 , 5 // WAITING
@@ -109,8 +105,7 @@ class MtImsCallSession
             -> {
                 mState =
                     State.TERMINATED
-                if (listener != null)
-                    die(ImsReasonInfo())
+                die(ImsReasonInfo())
             }
         }
 
@@ -139,7 +134,7 @@ class MtImsCallSession
         mProfile.setCallExtraInt(ImsCallProfile.EXTRA_CNAP, call.namePresentation)
 
         if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall && listener != null) {
-            listener!!.callSessionUpdated(mProfile)
+            listener?.callSessionUpdated(mProfile)
         }
         rilImsCall = call
     }
@@ -149,9 +144,7 @@ class MtImsCallSession
             calls.remove(rilImsCall!!.index)
         awaitingIdFromRIL.remove(mCallee)
         mState = State.TERMINATED
-        if (listener != null) {
-            listener!!.callSessionTerminated(reason)
-        }
+        listener?.callSessionTerminated(reason)
     }
 
     fun notifyEnded() {
@@ -193,7 +186,7 @@ class MtImsCallSession
     }
 
     fun notifyConfDone(call: Call) {
-        listener!!.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, call))
+        listener?.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, call))
     }
 
     override fun accept(callType: Int, profile: ImsStreamMediaProfile) {
@@ -215,8 +208,61 @@ class MtImsCallSession
     override fun reject(reason: Int) {
         mState = State.TERMINATING
         RilHolder.getRadio(mSlotId).rejectCall(RilHolder.callback({ radioResponseInfo, args ->
-
+            if (radioResponseInfo.error != 0) {
+                Rlog.e(tag, "Failed to reject call, $radioResponseInfo, $args")
+                mState = State.ESTABLISHED
+                listener?.callSessionResumed(mProfile)
+            } else
+                Rlog.d(tag, "Rejected call")
         }, mSlotId))
+    }
+
+    override fun setMute(muted: Boolean) {
+        val serial = RilHolder.prepareBlock(mSlotId)
+        RilHolder.getRadio(mSlotId).setMute(serial, muted)
+        val radioResponseInfo = RilHolder.blockUntilComplete(serial)
+        if (radioResponseInfo.error != 0) {
+            throw RuntimeException("Failed to setMute $radioResponseInfo")
+        }
+    }
+
+    override fun start(callee: String, profile: ImsCallProfile?) {
+        Log.d(tag, "Calling " + Rlog.pii(tag, callee))
+        mCallee = callee
+        val callInfo = Dial()
+        callInfo.address = callee
+        callInfo.clir = profile!!.getCallExtraInt(ImsCallProfile.EXTRA_OIR)
+        val extras = profile.mCallExtras.getBundle("OemCallExtras")
+        if (extras != null) {
+            Rlog.e(tag, "NI reading oemcallextras, it is $extras")
+        }
+
+        try {
+            Rlog.d(tag, "Adding to awaiting id from ril")
+            awaitingIdFromRIL[mCallee] =
+                this // Do it sooner rather than later so that this call is not seen as a phantom
+            RilHolder.getRadio(mSlotId).dial(RilHolder.callback({ radioResponseInfo, _ ->
+                if (radioResponseInfo.error == 0) {
+                    Rlog.d(tag, "successfully placed call")
+                    /*
+                    mInCall = true
+                    mState = State.ESTABLISHED
+                    listener?.callSessionInitiated(profile)
+                    It's done by updateState hopefully
+                    */
+                } else {
+                    Rlog.e(tag, "Call failed")
+                    mState = State.TERMINATED
+                    awaitingIdFromRIL.remove(callee, this)
+                    listener?.callSessionInitiatedFailed(ImsReasonInfo())
+                }
+            }, mSlotId), callInfo)
+        } catch (e: RemoteException) {
+            listener?.callSessionInitiatedFailed(ImsReasonInfo())
+            awaitingIdFromRIL.remove(callee, this)
+            Rlog.e(tag, "Sending dial failed with exception", e)
+        }
+
     }
 
 
