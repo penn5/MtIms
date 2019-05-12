@@ -274,12 +274,19 @@ class MtImsCallSession
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to terminate call! $radioResponseInfo $data")
                     listener?.callSessionResumed(mProfile)
-                } else {
-                    mInCall = false
                 }
+                // else, it will be handled by updateCall
             }, mSlotId), rilImsCall!!.index)
     }
 
+    override fun startConference(participants: Array<out String>, profile: ImsCallProfile) {
+        start(participants[0], profile)
+        //TODO is this right?
+    }
+
+    override fun deflect(destination: String?) {
+        // MTK don't even implement this.
+    }
 
     companion object {
         const val tag = "MtImsCallSession"
