@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 object RilHolder {
 
     private const val LOG_TAG = "MtImsRilHolder"
-    private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3")
+    private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3", "imsrild4")
     private val responseCallbacks = arrayOfNulls<MtImsRadioResponse>(3)
     private val unsolCallbacks = arrayOfNulls<MtImsRadioIndication>(3)
     private val radioImpls = arrayOfNulls<IRadio>(3)
@@ -55,8 +55,8 @@ object RilHolder {
 
         }
         try {
-            radioImpls[slotId]!!.setResponseFunctions(responseCallbacks[slotId]!!, unsolCallbacks[slotId])
-            // As we use imsrild, we don't need to set the aosp one to work
+            radioImpls[slotId]!!.setResponseFunctions(responseCallbacks[slotId], unsolCallbacks[slotId])
+            // As we use imsrild, we don't need to set the mtk one to work
         } catch (e: RemoteException) {
             Log.e(LOG_TAG, "Failed to update resp functions!")
         }
