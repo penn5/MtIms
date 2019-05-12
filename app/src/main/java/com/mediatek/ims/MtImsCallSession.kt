@@ -133,7 +133,7 @@ class MtImsCallSession
         )
         mProfile.setCallExtraInt(ImsCallProfile.EXTRA_CNAP, call.namePresentation)
 
-        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall && listener != null) {
+        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall) {
             listener?.callSessionUpdated(mProfile)
         }
         rilImsCall = call
@@ -144,6 +144,7 @@ class MtImsCallSession
             calls.remove(rilImsCall!!.index)
         awaitingIdFromRIL.remove(mCallee)
         mState = State.TERMINATED
+        mInCall = false
         listener?.callSessionTerminated(reason)
     }
 
@@ -263,6 +264,20 @@ class MtImsCallSession
             Rlog.e(tag, "Sending dial failed with exception", e)
         }
 
+    }
+
+    override fun terminate(reason: Int) {
+        mState = State.TERMINATING
+        Rlog.d(tag, "Terminating call")
+        RilHolder.getRadio(mSlotId)
+            .hangup(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(tag, "Failed to terminate call! $radioResponseInfo $data")
+                    listener?.callSessionResumed(mProfile)
+                } else {
+                    mInCall = false
+                }
+            }, mSlotId), rilImsCall!!.index)
     }
 
 
