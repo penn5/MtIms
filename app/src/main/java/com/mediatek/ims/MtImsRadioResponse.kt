@@ -1,13 +1,11 @@
 package com.mediatek.ims
 
 import android.hardware.radio.V1_0.*
-import android.hardware.radio.V1_1.KeepaliveStatus
 import android.os.Bundle
 import android.telephony.Rlog
 import android.telephony.ims.ImsCallProfile
 import android.util.Log
 import com.android.ims.ImsManager
-import vendor.mediatek.hardware.radio.V1_1.CallForwardInfoEx
 import vendor.mediatek.hardware.radio.V1_1.IImsRadioResponse
 import java.util.*
 
@@ -48,19 +46,11 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
         onResponse(p0)
     }
 
-    override fun setCarrierInfoForImsiEncryptionResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
     override fun nvResetConfigResponse(p0: RadioResponseInfo?) {
         onResponse(p0)
     }
 
     override fun reportStkServiceIsRunningResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun stopNetworkScanResponse(p0: RadioResponseInfo?) {
         onResponse(p0)
     }
 
@@ -126,14 +116,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
 
     override fun imsBearerActivationDoneResponse(p0: RadioResponseInfo?) {
         onResponse(p0)
-    }
-
-    override fun getColpResponse(p0: RadioResponseInfo?, p1: Int, p2: Int) {
-        onResponse(p0, p1, p2)
-    }
-
-    override fun runGbaAuthenticationResponse(p0: RadioResponseInfo?, p1: ArrayList<String>?) {
-        onResponse(p0, p1)
     }
 
     override fun setBandModeResponse(p0: RadioResponseInfo?) {
@@ -210,14 +192,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
 
     override fun acknowledgeRequest(p0: Int) {
         onAck(p0)
-    }
-
-    override fun startNetworkScanResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun getColrResponse(p0: RadioResponseInfo?, p1: Int) {
-        onResponse(p0, p1)
     }
 
     override fun iccTransmitApduBasicChannelResponse(p0: RadioResponseInfo?, p1: IccIoResult?) {
@@ -408,10 +382,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
         onResponse(p0, p1)
     }
 
-    override fun setModemImsCfgResponse(p0: RadioResponseInfo?, p1: String?) {
-        onResponse(p0, p1)
-    }
-
     override fun getClirResponse(p0: RadioResponseInfo?, p1: Int, p2: Int) {
         onResponse(p0, p1, p2)
     }
@@ -484,10 +454,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     override fun getLastCallFailCauseResponse(p0: RadioResponseInfo?, p1: LastCallFailCauseInfo?) {
-        onResponse(p0, p1)
-    }
-
-    override fun queryCallForwardInTimeSlotStatusResponse(p0: RadioResponseInfo?, p1: ArrayList<CallForwardInfoEx>?) {
         onResponse(p0, p1)
     }
 
@@ -614,14 +580,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
         onResponse(p0, p1)
     }
 
-    override fun stopKeepaliveResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun setClipResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
     override fun getCallWaitingResponse(p0: RadioResponseInfo?, p1: Boolean, p2: Int) {
         onResponse(p0, p1, p2)
     }
@@ -635,10 +593,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     override fun hangupWaitingOrBackgroundResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun setColrResponse(p0: RadioResponseInfo?) {
         onResponse(p0)
     }
 
@@ -702,10 +656,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
         onResponse(p0)
     }
 
-    override fun setCallForwardInTimeSlotResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
     override fun supplyIccPin2ForAppResponse(p0: RadioResponseInfo?, p1: Int) {
         onResponse(p0, p1)
     }
@@ -715,14 +665,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     override fun setImsEnableResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun setColpResponse(p0: RadioResponseInfo?) {
-        onResponse(p0)
-    }
-
-    override fun setSimCardPowerResponse_1_1(p0: RadioResponseInfo?) {
         onResponse(p0)
     }
 
@@ -751,10 +693,6 @@ class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     override fun getBasebandVersionResponse(p0: RadioResponseInfo?, p1: String?) {
-        onResponse(p0, p1)
-    }
-
-    override fun startKeepaliveResponse(p0: RadioResponseInfo?, p1: KeepaliveStatus?) {
         onResponse(p0, p1)
     }
 

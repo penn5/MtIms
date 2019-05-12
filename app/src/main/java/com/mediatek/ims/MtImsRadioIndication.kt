@@ -1,8 +1,6 @@
 package com.mediatek.ims
 
 import android.hardware.radio.V1_0.*
-import android.hardware.radio.V1_1.KeepaliveStatus
-import android.hardware.radio.V1_1.NetworkScanResult
 import android.telephony.Rlog
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
@@ -10,6 +8,10 @@ import vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
 import vendor.mediatek.hardware.radio.V1_1.IncomingCallNotification
 
 class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub() {
+    override fun gttCapabilityIndication(p0: Int, p1: Int, p2: Int, p3: Int) {
+        Rlog.v(tag, "gttCapabilityIndication($p0, $p1, $p2, $p3)")
+    }
+
     override fun imsBearerDeactivation(p0: Int, p1: Int, p2: String?) {
         Rlog.v(tag, "imsBearerDeactivation($p0, $p1, $p2)")
     }
@@ -20,10 +22,6 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun newSmsStatusReport(p0: Int, p1: ArrayList<Byte>?) {
         Rlog.v(tag, "newSmsStatusReport($p0, $p1)")
-    }
-
-    override fun carrierInfoForImsiEncryption(p0: Int) {
-        Rlog.v(tag, "carrierInfoForImsiEncryption($p0)")
     }
 
     override fun imsDisableStart(p0: Int) {
@@ -78,10 +76,6 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun stkEventNotify(p0: Int, p1: String?) {
         Rlog.v(tag, "stkEventNotify($p0, $p1)")
-    }
-
-    override fun keepaliveStatus(p0: Int, p1: KeepaliveStatus?) {
-        Rlog.v(tag, "keepaliveStatus($p0, $p1)")
     }
 
     override fun cdmaOtaProvisionStatus(p0: Int, p1: Int) {
@@ -200,11 +194,6 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
         Rlog.v(tag, "exitECBM($p0)")
     }
 
-    override fun multiImsCount(p0: Int, p1: Int) {
-        Rlog.v(tag, "multiImsCount($p0, $p1)")
-        //TODO
-    }
-
     override fun imsNetworkStateChanged(p0: Int) {
         Rlog.v(tag, "imsNetworkStateChanged($p0)")
         //TODO
@@ -271,10 +260,6 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
 
     override fun onXui(p0: Int, p1: String?, p2: String?, p3: String?) {
         Rlog.v(tag, "onXui($p0, $p1, $p2, $p3)")
-    }
-
-    override fun networkScanResult(p0: Int, p1: NetworkScanResult?) {
-        Rlog.v(tag, "networkScanResult($p0, $p1)")
     }
 
     override fun cdmaNewSms(p0: Int, p1: CdmaSmsMessage?) {
