@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import android.hardware.radio.V1_0.RadioResponseInfo
 import android.os.RemoteException
 import android.util.Log
-import vendor.mediatek.hardware.radio.V2_0.IRadio
+import vendor.mediatek.hardware.radio.V1_1.IRadio
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

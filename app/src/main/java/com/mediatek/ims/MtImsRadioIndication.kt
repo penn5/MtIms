@@ -6,8 +6,8 @@ import android.hardware.radio.V1_1.NetworkScanResult
 import android.telephony.Rlog
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
-import vendor.mediatek.hardware.radio.V2_0.IImsRadioIndication
-import vendor.mediatek.hardware.radio.V2_0.IncomingCallNotification
+import vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
+import vendor.mediatek.hardware.radio.V1_1.IncomingCallNotification
 
 class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub() {
     override fun imsBearerDeactivation(p0: Int, p1: Int, p2: String?) {

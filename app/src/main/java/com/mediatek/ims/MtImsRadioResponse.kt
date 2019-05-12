@@ -7,8 +7,8 @@ import android.telephony.Rlog
 import android.telephony.ims.ImsCallProfile
 import android.util.Log
 import com.android.ims.ImsManager
-import vendor.mediatek.hardware.radio.V2_0.CallForwardInfoEx
-import vendor.mediatek.hardware.radio.V2_0.IImsRadioResponse
+import vendor.mediatek.hardware.radio.V1_1.CallForwardInfoEx
+import vendor.mediatek.hardware.radio.V1_1.IImsRadioResponse
 import java.util.*
 
 class MtImsRadioResponse(val mSlotId: Int) : IImsRadioResponse.Stub() {
