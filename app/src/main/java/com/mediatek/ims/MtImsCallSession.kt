@@ -288,6 +288,29 @@ class MtImsCallSession
         // MTK don't even implement this.
     }
 
+    override fun hold(profile: ImsStreamMediaProfile?) {
+        RilHolder.getRadio(mSlotId)
+            .holdCall(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(tag, "Failed to hold call! $radioResponseInfo $data")
+                    listener?.callSessionHoldFailed(ImsReasonInfo())
+                }
+                // Else, it will be handled by updateCall
+            }, mSlotId), rilImsCall!!.index)
+    }
+
+
+    override fun resume(profile: ImsStreamMediaProfile?) {
+        RilHolder.getRadio(mSlotId)
+            .resumeCall(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(tag, "Failed to resume call! $radioResponseInfo $data")
+                    listener?.callSessionResumeFailed(ImsReasonInfo())
+                }
+                // Else, it will be handled by updateCall
+            }, mSlotId), rilImsCall!!.index)
+    }
+
     companion object {
         const val tag = "MtImsCallSession"
 
