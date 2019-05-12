@@ -14,7 +14,8 @@
                  tools:ignore="GoogleAppIndexingWarning">
         <service android:name=".MtImsService"
                  android:permission="android.permission.BIND_IMS_SERVICE"
-                 android:persistent="true">
+                 android:persistent="true"
+                 android:directBootAware="true" >
             <intent-filter>
                 <action android:name="android.telephony.ims.ImsService"/>
             </intent-filter>
