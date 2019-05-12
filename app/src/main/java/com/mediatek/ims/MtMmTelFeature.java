@@ -46,17 +46,22 @@ public class MtMmTelFeature extends MmTelFeature {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
                 if (resp1.error != 0)
                     Log.e(LOG_TAG, "Failed to initialize IMS, see earlier logs from RilHolder for error code");
-                try {
-                    RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
-                                if (resp2.error != 0)
-                                    Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
-                                return null;
-                            }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
-                            /* VoWiFi */ false, /* ViWiFi */ false,
-                            /* SMS */ false, /* "eims" */ false);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
+                else
+                    try {
+                        RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
+                                    if (resp2.error != 0)
+                                        Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
+                                    else {
+                                        Rlog.d(LOG_TAG, "Success to setImscfg, yay");
+                                        MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
+                                    }
+                                    return null;
+                                }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
+                                /* VoWiFi */ false, /* ViWiFi */ false,
+                                /* SMS */ false, /* "eims" */ false);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                 return null;
             }, mSlotId), true);
 
@@ -75,6 +80,9 @@ public class MtMmTelFeature extends MmTelFeature {
                     RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
                                 if (resp2.error != 0)
                                     Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
+                                else
+                                    MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+
                                 return null;
                             }, mSlotId), /* VoLTE */ false, /* ViLTE */ false,
                             /* VoWiFi */false, /* ViWiFi */ false,
