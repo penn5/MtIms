@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentHashMap
 object RilHolder {
 
     private const val tag = "MtImsRilHolder"
-    private var serviceBase = "vendor.mediatek.hardware.radio"
+    private const val serviceBase = "vendor.mediatek.hardware.radio"
     private val serviceQualifiers = arrayOf("1.1", "2.0", "3.0")
-    private val serviceType = "IRadio"
+    private const val serviceType = "IRadio"
     private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3", "imsrild4")
     private val responseCallbacks = arrayOfNulls<MtImsRadioResponse>(3)
     private val unsolCallbacks = arrayOfNulls<MtImsRadioIndication>(3)
@@ -37,8 +37,8 @@ object RilHolder {
             } catch (e: Throwable) {
                 Log.e(tag, "Failed to getService, unknown exception, shouldn't happen! $e")
             }
-            if (iRadio != null)
-                return IRadio.castFrom(iRadio.queryLocalInterface("$serviceBase@$serviceQualifier::$serviceType")!!)
+            return IRadio.castFrom(iRadio?.queryLocalInterface("$serviceBase@$serviceQualifier::$serviceType")!!)
+                ?: continue
         }
         throw NoSuchElementException()
     }
