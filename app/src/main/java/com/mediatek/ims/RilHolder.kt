@@ -38,7 +38,7 @@ object RilHolder {
                 Log.e(tag, "Failed to getService, unknown exception, shouldn't happen! $e")
             }
             if (iRadio != null)
-                return IRadio.asInterface(iRadio)
+                return IRadio.castFrom(iRadio.queryLocalInterface("$serviceBase@$serviceQualifier::$serviceType")!!)
         }
         throw NoSuchElementException()
     }
