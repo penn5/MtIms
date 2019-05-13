@@ -54,6 +54,9 @@ public class MtMmTelFeature extends MmTelFeature {
                                         Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
                                     else {
                                         Rlog.d(LOG_TAG, "Success to setImscfg, yay");
+                                        MmTelCapabilities capabilities = new MmTelCapabilities();
+                                        capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+                                        notifyCapabilitiesStatusChanged(capabilities);
                                         MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
                                     }
                                     return null;
@@ -81,9 +84,12 @@ public class MtMmTelFeature extends MmTelFeature {
                     RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
                                 if (resp2.error != 0)
                                     Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
-                                else
+                                else {
+                                    MmTelCapabilities capabilities = new MmTelCapabilities();
+                                    capabilities.addCapabilities(0);
+                                    notifyCapabilitiesStatusChanged(capabilities);
                                     MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
-
+                                }
                                 return null;
                             }, mSlotId), /* VoLTE */ false, /* ViLTE */ false,
                             /* VoWiFi */false, /* ViWiFi */ false,
