@@ -62,7 +62,7 @@ public class MtMmTelFeature extends MmTelFeature {
                                     return null;
                                 }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
                                 /* VoWiFi */ false, /* ViWiFi */ false,
-                                /* SMS */ false, /* "eims" */ false);
+                                /* SMS */ false, /* "eims" */ true);
                     } catch (RemoteException e) {
                         throw new RuntimeException(e);
                     }
