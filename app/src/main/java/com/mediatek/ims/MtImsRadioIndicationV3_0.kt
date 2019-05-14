@@ -338,6 +338,7 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsEnableStart(p0: Int) {
         Rlog.d(tag, "imsEnableStart($p0)")
+        MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
     }
 
     override fun enterEmergencyCallbackMode(p0: Int) {
