@@ -19,6 +19,11 @@ class IRadioDelegator {
         mIRadio3 = iRadio3
     }
 
+    fun ensureSet() {
+        if ((mIRadio1 == null) and (mIRadio2 == null) and (mIRadio3 == null))
+            throw NoSuchElementException()
+    }
+
     // Dirty but it works :D
     fun setResponseFunctions(
         response: android.hardware.radio.V1_0.IRadioResponse?,
@@ -110,10 +115,5 @@ class IRadioDelegator {
         mIRadio3?.resumeCall(serial, index)
         mIRadio2?.resumeCall(serial, index)
         mIRadio1?.resumeCall(serial, index)
-    }
-
-    fun ensureSet() {
-        if ((mIRadio1 == null) and (mIRadio2 == null) and (mIRadio3 == null))
-            throw NoSuchElementException()
     }
 }
