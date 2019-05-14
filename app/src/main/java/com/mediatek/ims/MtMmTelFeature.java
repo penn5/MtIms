@@ -28,6 +28,13 @@ public class MtMmTelFeature extends MmTelFeature {
         setFeatureState(STATE_READY);
     }
 
+    void setVoiceRegistered(boolean registered) {
+        MmTelCapabilities capabilities = new MmTelCapabilities();
+        if (registered)
+            capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+        notifyCapabilitiesStatusChanged(capabilities);
+    }
+
     @Override
     public boolean queryCapabilityConfiguration(int capability, int radioTech) {
         return mEnabledCapabilities.get(radioTech).isCapable(capability);
