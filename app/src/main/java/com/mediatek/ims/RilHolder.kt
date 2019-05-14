@@ -4,47 +4,33 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.hardware.radio.V1_0.RadioResponseInfo
-import android.os.HwBinder
-import android.os.IHwBinder
 import android.os.RemoteException
 import android.util.Log
-import vendor.mediatek.hardware.radio.V1_1.IRadio
 import java.util.concurrent.ConcurrentHashMap
 
 object RilHolder {
 
     private const val tag = "MtImsRilHolder"
-    private const val serviceBase = "vendor.mediatek.hardware.radio"
-    private val serviceQualifiers = arrayOf("1.1", "2.0", "3.0")
-    private const val serviceType = "IRadio"
     private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3", "imsrild4")
-    private val responseCallbacks = arrayOfNulls<MtImsRadioResponse>(3)
-    private val unsolCallbacks = arrayOfNulls<MtImsRadioIndication>(3)
-    private val radioImpls = arrayOfNulls<IRadio>(3)
+    private val responseCallbacks = arrayOfNulls<MtImsRadioResponseV1_1>(3)
+    private val unsolCallbacks = arrayOfNulls<MtImsRadioIndicationV1_1>(3)
+    private val radioImpls = arrayOfNulls<IRadioDelegator>(3)
     private var nextSerial = -1
     private val serialToSlot = ConcurrentHashMap<Int, Int>()
     private val callbacks = ConcurrentHashMap<Int, (RadioResponseInfo, Array<out Any?>) -> Unit>()
     private val blocks = ConcurrentHashMap<Int, BlockingCallback>()
 
 
-    private fun getIRadio(serviceName: String): IRadio {
-        var iRadio: IHwBinder? = null
-        for (serviceQualifier in serviceQualifiers) {
-            try {
-                iRadio = HwBinder.getService("$serviceBase@$serviceQualifier::$serviceType", serviceName)
-            } catch (e: NoSuchElementException) {
-                Log.w(tag, "Failed to getService, NoSuchElement, probably its okay because we retry... $e")
-            } catch (e: Throwable) {
-                Log.e(tag, "Failed to getService, unknown exception, shouldn't happen! $e")
-            }
-            return IRadio.castFrom(iRadio?.queryLocalInterface("$serviceBase@$serviceQualifier::$serviceType")!!)
-                ?: continue
-        }
-        throw NoSuchElementException()
+    private fun getIRadio(serviceName: String): IRadioDelegator {
+        val iRadioDelegator = IRadioDelegator()
+        iRadioDelegator.setIRadio1(vendor.mediatek.hardware.radio.V1_1.IRadio.getService(serviceName))
+        iRadioDelegator.setIRadio2(vendor.mediatek.hardware.radio.V2_0.IRadio.getService(serviceName))
+        iRadioDelegator.setIRadio3(vendor.mediatek.hardware.radio.V3_0.IRadio.getService(serviceName))
+        return iRadioDelegator
     }
 
     @Synchronized
-    fun getRadio(slotId: Int): IRadio {
+    fun getRadio(slotId: Int): IRadioDelegator {
         if (radioImpls[slotId] == null) {
             try {
                 try {
@@ -66,8 +52,8 @@ object RilHolder {
                     // We're dead.
                 }
 
-                responseCallbacks[slotId] = MtImsRadioResponse(slotId)
-                unsolCallbacks[slotId] = MtImsRadioIndication(slotId)
+                responseCallbacks[slotId] = MtImsRadioResponseV1_1(slotId)
+                unsolCallbacks[slotId] = MtImsRadioIndicationV1_1(slotId)
             } catch (e: RemoteException) {
                 Log.e(tag, "remoteexception getting serivce. will throw npe later ig.")
                 throw RuntimeException("Failed to get service due to internal error")

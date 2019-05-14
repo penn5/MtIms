@@ -1,7 +1,6 @@
 package com.mediatek.ims;
 
 import android.annotation.NonNull;
-import android.os.RemoteException;
 import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsReasonInfo;
@@ -45,66 +44,51 @@ public class MtMmTelFeature extends MmTelFeature {
 
     public void registerIms() {
         MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistering(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
-        try {
-            RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
-                if (resp1.error != 0)
-                    Log.e(LOG_TAG, "Failed to initialize IMS, see earlier logs from RilHolder for error code");
-                else
-                    try {
-                        RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
-                                    if (resp2.error != 0)
-                                        Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
-                                    else {
-                                        Rlog.d(LOG_TAG, "Success to setImscfg, yay");
-                                        MmTelCapabilities capabilities = new MmTelCapabilities();
-                                        capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
-                                        notifyCapabilitiesStatusChanged(capabilities);
-                                        MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
-                                    }
-                                    return null;
-                                }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
-                                /* VoWiFi */ false, /* ViWiFi */ false,
-                                /* SMS */ false, /* "eims" */ true);
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
-                return null;
-            }, mSlotId), true);
+        RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
+            if (resp1.error != 0)
+                Log.e(LOG_TAG, "Failed to initialize IMS, see earlier logs from RilHolder for error code");
+            else {
+                RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
+                            if (resp2.error != 0)
+                                Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
+                            else {
+                                Rlog.d(LOG_TAG, "Success to setImscfg, yay");
+                                MmTelCapabilities capabilities = new MmTelCapabilities();
+                                capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+                                notifyCapabilitiesStatusChanged(capabilities);
+                                MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
+                            }
+                            return null;
+                        }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
+                        /* VoWiFi */ false, /* ViWiFi */ false,
+                        /* SMS */ false, /* "eims" */ true);
+            }
+            return null;
+        }, mSlotId), true);
 
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void deregisterIms() {
-        try {
-            RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
-                if (resp1.error != 0)
-                    Log.e(LOG_TAG, "Failed to deinitialize IMS, see earlier logs from RilHolder for error code");
-                MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
-                try {
-                    RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
-                                if (resp2.error != 0)
-                                    Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
-                                else {
-                                    MmTelCapabilities capabilities = new MmTelCapabilities();
-                                    capabilities.addCapabilities(0);
-                                    notifyCapabilitiesStatusChanged(capabilities);
-                                    MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
-                                }
-                                return null;
-                            }, mSlotId), /* VoLTE */ false, /* ViLTE */ false,
-                            /* VoWiFi */false, /* ViWiFi */ false,
-                            /* SMS */ false, /* "eims" */ false);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-                return null;
-            }, mSlotId), false);
+        RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
+            if (resp1.error != 0)
+                Log.e(LOG_TAG, "Failed to deinitialize IMS, see earlier logs from RilHolder for error code");
+            MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+            RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
+                        if (resp2.error != 0)
+                            Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
+                        else {
+                            MmTelCapabilities capabilities = new MmTelCapabilities();
+                            capabilities.addCapabilities(0);
+                            notifyCapabilitiesStatusChanged(capabilities);
+                            MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+                        }
+                        return null;
+                    }, mSlotId), /* VoLTE */ false, /* ViLTE */ false,
+                    /* VoWiFi */false, /* ViWiFi */ false,
+                    /* SMS */ false, /* "eims" */ false);
+            return null;
+        }, mSlotId), false);
 
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 

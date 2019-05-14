@@ -7,7 +7,7 @@ import android.telephony.ims.stub.ImsRegistrationImplBase
 import vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
 import vendor.mediatek.hardware.radio.V1_1.IncomingCallNotification
 
-class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub() {
+class MtImsRadioIndicationV1_1(private val mSlotId: Int) : IImsRadioIndication.Stub() {
     override fun gttCapabilityIndication(p0: Int, p1: Int, p2: Int, p3: Int) {
         Rlog.v(tag, "gttCapabilityIndication($p0, $p1, $p2, $p3)")
     }
@@ -377,7 +377,7 @@ class MtImsRadioIndication(private val mSlotId: Int) : IImsRadioIndication.Stub(
     }
 
     companion object {
-        const val tag = "MtImsRadioIndication"
+        const val tag = "MtImsRadioIndicationV1_1"
     }
 
 }
