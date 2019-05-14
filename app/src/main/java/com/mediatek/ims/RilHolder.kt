@@ -23,9 +23,22 @@ object RilHolder {
 
     private fun getIRadio(serviceName: String): IRadioDelegator {
         val iRadioDelegator = IRadioDelegator()
-        iRadioDelegator.setIRadio1(vendor.mediatek.hardware.radio.V1_1.IRadio.getService(serviceName))
-        iRadioDelegator.setIRadio2(vendor.mediatek.hardware.radio.V2_0.IRadio.getService(serviceName))
-        iRadioDelegator.setIRadio3(vendor.mediatek.hardware.radio.V3_0.IRadio.getService(serviceName))
+        try {
+            iRadioDelegator.setIRadio1(vendor.mediatek.hardware.radio.V1_1.IRadio.getService(serviceName))
+        } catch (e: NoSuchElementException) {
+            Log.w(tag, "Failed to get IRadio1")
+        }
+        try {
+            iRadioDelegator.setIRadio2(vendor.mediatek.hardware.radio.V2_0.IRadio.getService(serviceName))
+        } catch (e: NoSuchElementException) {
+            Log.w(tag, "Failed to get IRadio2")
+        }
+        try {
+            iRadioDelegator.setIRadio3(vendor.mediatek.hardware.radio.V3_0.IRadio.getService(serviceName))
+        } catch (e: NoSuchElementException) {
+            Log.w(tag, "Failed to get IRadio3")
+        }
+        iRadioDelegator.ensureSet()
         return iRadioDelegator
     }
 

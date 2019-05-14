@@ -4,9 +4,9 @@ import android.hardware.radio.V1_0.Dial
 
 
 class IRadioDelegator {
-    var mIRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio? = null
-    var mIRadio2: vendor.mediatek.hardware.radio.V2_0.IRadio? = null
-    var mIRadio3: vendor.mediatek.hardware.radio.V3_0.IRadio? = null
+    private var mIRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio? = null
+    private var mIRadio2: vendor.mediatek.hardware.radio.V2_0.IRadio? = null
+    private var mIRadio3: vendor.mediatek.hardware.radio.V3_0.IRadio? = null
     fun setIRadio1(iRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio) {
         mIRadio1 = iRadio1
     }
@@ -110,5 +110,10 @@ class IRadioDelegator {
         mIRadio3?.resumeCall(serial, index)
         mIRadio2?.resumeCall(serial, index)
         mIRadio1?.resumeCall(serial, index)
+    }
+
+    fun ensureSet() {
+        if ((mIRadio1 == null) and (mIRadio2 == null) and (mIRadio3 == null))
+            throw NoSuchElementException()
     }
 }
