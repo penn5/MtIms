@@ -43,6 +43,23 @@ class IRadioDelegator {
         )
     }
 
+    fun setResponseFunctionsIms(
+        response: android.hardware.radio.V1_0.IRadioResponse?,
+        indication: android.hardware.radio.V1_0.IRadioIndication?
+    ) {
+        mIRadio3?.setResponseFunctionsIms(
+            response as? vendor.mediatek.hardware.radio.V3_0.IImsRadioResponse,
+            indication as? vendor.mediatek.hardware.radio.V3_0.IImsRadioIndication
+        )
+        mIRadio2?.setResponseFunctionsIms(
+            response as? vendor.mediatek.hardware.radio.V2_0.IImsRadioResponse,
+            indication as? vendor.mediatek.hardware.radio.V2_0.IImsRadioIndication
+        )
+        mIRadio1?.setResponseFunctionsIms(
+            response as? vendor.mediatek.hardware.radio.V1_1.IImsRadioResponse,
+            indication as? vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
+        )
+    }
     fun setImscfg(
         serial: Int,
         volte: Boolean,

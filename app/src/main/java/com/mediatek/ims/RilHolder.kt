@@ -12,8 +12,9 @@ object RilHolder {
 
     private const val tag = "MtImsRilHolder"
     private val serviceNames = arrayOf("imsrild1", "imsrild2", "imsrild3", "imsrild4")
-    private val responseCallbacks = arrayOfNulls<MtImsRadioResponseV1_1>(3)
-    private val unsolCallbacks = arrayOfNulls<MtImsRadioIndicationV1_1>(3)
+    private var version: Int = -1
+    private val responseCallbacks = arrayOfNulls<android.hardware.radio.V1_0.IRadioResponse>(3)
+    private val unsolCallbacks = arrayOfNulls<android.hardware.radio.V1_0.IRadioIndication>(3)
     private val radioImpls = arrayOfNulls<IRadioDelegator>(3)
     private var nextSerial = -1
     private val serialToSlot = ConcurrentHashMap<Int, Int>()
@@ -25,16 +26,19 @@ object RilHolder {
         val iRadioDelegator = IRadioDelegator()
         try {
             iRadioDelegator.setIRadio1(vendor.mediatek.hardware.radio.V1_1.IRadio.getService(serviceName))
+            version = 1
         } catch (e: NoSuchElementException) {
             Log.w(tag, "Failed to get IRadio1")
         }
         try {
             iRadioDelegator.setIRadio2(vendor.mediatek.hardware.radio.V2_0.IRadio.getService(serviceName))
+            version = 2
         } catch (e: NoSuchElementException) {
             Log.w(tag, "Failed to get IRadio2")
         }
         try {
             iRadioDelegator.setIRadio3(vendor.mediatek.hardware.radio.V3_0.IRadio.getService(serviceName))
+            version = 3
         } catch (e: NoSuchElementException) {
             Log.w(tag, "Failed to get IRadio3")
         }
@@ -65,8 +69,18 @@ object RilHolder {
                     // We're dead.
                 }
 
-                responseCallbacks[slotId] = MtImsRadioResponseV1_1(slotId)
-                unsolCallbacks[slotId] = MtImsRadioIndicationV1_1(slotId)
+                responseCallbacks[slotId] = when (version) {
+                    1 -> MtImsRadioResponseV1_1(slotId)
+                    2 -> MtImsRadioResponseV2_0(slotId)
+                    3 -> MtImsRadioResponseV3_0(slotId)
+                    else -> null
+                }
+                unsolCallbacks[slotId] = when (version) {
+                    1 -> MtImsRadioIndicationV1_1(slotId)
+                    2 -> MtImsRadioIndicationV2_0(slotId)
+                    3 -> MtImsRadioIndicationV3_0(slotId)
+                    else -> null
+                }
             } catch (e: RemoteException) {
                 Log.e(tag, "remoteexception getting serivce. will throw npe later ig.")
                 throw RuntimeException("Failed to get service due to internal error")
@@ -75,6 +89,7 @@ object RilHolder {
         }
         try {
             radioImpls[slotId]!!.setResponseFunctions(responseCallbacks[slotId], unsolCallbacks[slotId])
+            radioImpls[slotId]!!.setResponseFunctionsIms(responseCallbacks[slotId], unsolCallbacks[slotId])
             // As we use imsrild, we don't need to set the mtk one to work
         } catch (e: RemoteException) {
             Log.e(tag, "Failed to update resp functions!")
