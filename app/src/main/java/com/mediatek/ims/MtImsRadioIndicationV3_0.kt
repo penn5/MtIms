@@ -405,8 +405,8 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsEnableDone(p0: Int) {
         Rlog.d(tag, "imsEnableDone($p0)")
-        MtImsService.instance!!.createMmTelFeature(mSlotId).setVoiceRegistered(false)
         MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE)
+        MtImsService.instance!!.createMmTelFeature(mSlotId).setVoiceRegistered(true)
     }
 
     override fun imsBearerActivation(type: Int, aid: Int, capability: String?) {
