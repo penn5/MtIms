@@ -21,7 +21,7 @@ public class MtMmTelFeature extends MmTelFeature {
         mSlotId = slotId;
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
-        mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
+        mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN,
                 new MmTelCapabilities(0));
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_NONE,
                 new MmTelCapabilities(0));
