@@ -311,6 +311,7 @@ class MtImsCallSession
                 } else {
                     Rlog.d(tag, "Resumed call!")
                     listener?.callSessionResumed(mProfile)
+                }
                 // Else, it will be handled by updateCall?
             }, mSlotId), rilImsCall!!.index)
     }
