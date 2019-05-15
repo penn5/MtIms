@@ -141,10 +141,12 @@ object RilHolder {
     }
 
     fun triggerCB(serial: Int, radioResponseInfo: RadioResponseInfo, vararg args: Any?) {
-        Log.e(
-            tag,
+        val logData =
             "Incoming response for slot " + serialToSlot[serial] + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", args " + args
-        )
+        if (radioResponseInfo.error != 0)
+            Log.e(tag, logData)
+        else
+            Log.d(tag, logData)
         if (callbacks.containsKey(serial))
             callbacks[serial]!!(radioResponseInfo, args)
     }
