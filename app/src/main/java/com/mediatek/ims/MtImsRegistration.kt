@@ -17,7 +17,7 @@ class MtImsRegistration(val mSlotId: Int) : ImsRegistrationImplBase() {
         this.onRegistering(imsRadioTech)
     }
 
-    fun notifyDeregistered(info: ImsReasonInfo, @ImsRegistrationTech imsRadioTech: Int) {
+    fun notifyDeregistered(info: ImsReasonInfo) {
         this.onDeregistered(info)
     }
 }
