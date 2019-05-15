@@ -55,11 +55,9 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
         Rlog.v(tag, "onUssi($p0, $p1, $p2, $p3, $p4, $p5, $p6, $p7)")
     }
 
-    @Suppress("UNCHECKED_CAST") // Kotlin doesn't support checking the class in the list, so it raises a warning
-    // but we don't care because it is checked by us.
     override fun callStateChanged(p0: Int) {
         Rlog.v(tag, "callStateChanged($p0)")
-        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
+        //TODO?
     }
 
     override fun suppSvcNotify(p0: Int, p1: SuppSvcNotification?) {
@@ -142,54 +140,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun callInfoIndication(type: Int, data: ArrayList<String>?) {
         Rlog.v(tag, "callInfoIndication($type, $data)") //TODO PII
-        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
-        // This is gotten from Mtk ImsService, but written by me
-        data?.let {
-            if (data.size > 0) {
-                val callId = data[0]
-                val msgType = data[1].toInt()
-                val callNumber = if (data.size < 7) "" else data[6]
-                val callMode = if (data[5] == "") 0xFF
-                else
-                    data[5].toInt()
-                // p1=msgType, p2=callMode, p3=callId, p4=callNumber
-
-                val conference = when (callMode) {
-                    24 -> true
-                    25 -> true
-                    else -> false
-                }
-
-                Rlog.d(
-                    tag,
-                    "callInfoIndication, callId=$callId, msgType=$msgType, callNumber=${Rlog.pii(
-                        tag,
-                        callNumber
-                    )}, callMode=$callMode, conference=$conference"
-                )
-
-                when (msgType) {
-                    0 -> {
-                        Rlog.d(tag, "New INCOMING")
-                    } // Create new incoming call
-                    2 -> {
-                        Rlog.d(tag, "Conference to $conference")
-                    } // Change conference mode
-                    130 -> {
-                        Rlog.d(tag, "New ALERTING")
-                    } // Create new alerting call
-                    131 -> {
-                        Rlog.d(tag, "Enter HOLDING and conference $conference")
-                    } // Enter holding mode and change conference mode
-                    132 -> {
-                        Rlog.d(tag, "Enter ACTIVE and conference $conference")
-                    } // Enter active mode and change conference mode
-                    133 -> {
-                        Rlog.d(tag, "Call TERMINATE")
-                    } // Call ended; delete
-                }
-            }
-        }
+        ParseUtil.parseCallInfoIndication(data)
     }
 
     override fun newSmsOnSim(p0: Int, p1: Int) {
@@ -219,7 +170,9 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun incomingCallIndication(type: Int, call: IncomingCallNotification?) {
         Rlog.d(tag, "incomingCallIndication($type, $call)") // TODO PII
-        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
+        call?.let {
+            ParseUtil.parseIncomingCallIndication(it.callId, it.callMode, it.number, it.redirectNumber, it.seqNo, it.type)
+        }
     }
 
     override fun getProvisionDone(p0: Int, p1: String?, p2: String?) {

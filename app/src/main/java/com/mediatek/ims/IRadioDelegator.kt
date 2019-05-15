@@ -1,6 +1,7 @@
 package com.mediatek.ims
 
 import android.hardware.radio.V1_0.Dial
+import android.telephony.Rlog
 
 class IRadioDelegator {
     private var mIRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio? = null
@@ -141,5 +142,8 @@ class IRadioDelegator {
         mIRadio3?.setVolteEnable(serial, volte)
         mIRadio2?.setVolteEnable(serial, volte)
         mIRadio1?.setVolteEnable(serial, volte)
+    }
+    companion object {
+        const val tag = "MtImsRadioDelegator"
     }
 }

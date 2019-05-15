@@ -1,7 +1,6 @@
 package com.mediatek.ims
 
 import android.annotation.SuppressLint
-import android.hardware.radio.V1_0.Call
 import android.hardware.radio.V1_0.Dial
 import android.hardware.radio.V1_0.RadioResponseInfo
 import android.os.RemoteException
@@ -23,14 +22,16 @@ class MtImsCallSession
     private val mRemoteProfile: ImsCallProfile
     private var listener: ImsCallSessionListener? = null
 
-    var rilImsCall: Call? = null
+    private var mIndex: Int = -1
+    private var mRILState: Int = -1
+    var mCallee: String = ""
+
     private var mInCall = false
 
     private val mCallIdLock = Object()
     private var confInProgress = false
     private var mState: Int = 0
 
-    var mCallee: String = ""
     private val mCount: Int
 
     init {
@@ -42,20 +43,20 @@ class MtImsCallSession
     }
 
     // For incoming (MT) calls
-    constructor(slotId: Int, profile: ImsCallProfile, call: Call) : this(slotId, profile) {
-        updateCall(call)
-        calls[call.index] = this
+    constructor(slotId: Int, profile: ImsCallProfile, index: Int, state: Int, number: String) : this(slotId, profile) {
+        updateCall(index, state, number)
+        calls[index] = this
     }
 
-    fun addIdFromRIL(call: Call) {
+    fun addIdFromRIL(index: Int, state: Int, number: String) {
         synchronized(sCallsLock) {
-            var worked = awaitingIdFromRIL.remove("+" + call.number, this)
+            var worked = awaitingIdFromRIL.remove("+$number", this)
             if (!worked)
-                worked = awaitingIdFromRIL.remove(call.number, this)
+                worked = awaitingIdFromRIL.remove(number, this)
             if (worked) {
                 synchronized(mCallIdLock) {
-                    updateCall(call)
-                    calls[call.index] = this
+                    updateCall(index, state, number)
+                    calls[index] = this
                     mCallIdLock.notify()
                 }
             }
@@ -63,24 +64,24 @@ class MtImsCallSession
     }
 
     @SuppressLint("MissingPermission")
-    fun updateCall(call: Call) {
+    fun updateCall(nIndex: Int, nState: Int, nNumber: String) {
         val lastState = mState
-        when (call.state) {
+        when (nState) {
             0 // ACTIVE
-            -> if (rilImsCall == null) {
+            -> if (mIndex == -1) {
                 mState = State.ESTABLISHED
                 listener?.callSessionInitiated(mProfile)
-            } else if (rilImsCall!!.state == 2 || // DIALING
+            } else if (mRILState == 2 || // DIALING
 
-                rilImsCall!!.state == 3 || // ALERTING
+                mRILState == 3 || // ALERTING
 
-                rilImsCall!!.state == 4 || // INCOMING
+                mRILState == 4 || // INCOMING
 
-                rilImsCall!!.state == 5
+                mRILState == 5
             ) { // WAITING
                 mState = State.ESTABLISHED
                 listener?.callSessionInitiated(mProfile)
-            } else if (rilImsCall!!.state == 1 /* HOLDING */ && !confInProgress) { // HOLDING
+            } else if (mRILState == 1 /* HOLDING */ && !confInProgress) { // HOLDING
                 listener?.callSessionResumed(mProfile)
             } else {
                 Rlog.e(tag, "stuff")
@@ -92,7 +93,7 @@ class MtImsCallSession
             3 // ALERTING
             -> {
                 mState = State.NEGOTIATING
-                if (rilImsCall == null) {
+                if (mIndex == -1) {
                     Rlog.e(tag, "Alerting an incoming call wtf?")
                 }
                 listener?.callSessionProgressing(ImsStreamMediaProfile())
@@ -118,7 +119,7 @@ class MtImsCallSession
         Log.d(tag, "CC ${telephonyManager.networkCountryIso.toUpperCase()}")
         mProfile.setCallExtra(
             ImsCallProfile.EXTRA_OI, PhoneNumberUtils.formatNumberToE164(
-                call.number,
+                nNumber,
                 (telephonyManager.networkCountryIso
                     ?: telephonyManager.simCountryIso).toUpperCase()
             )
@@ -126,22 +127,24 @@ class MtImsCallSession
 
         Log.d(tag, "Using OI ${Rlog.pii(tag, mProfile.getCallExtra(ImsCallProfile.EXTRA_OI))} for profile")
 
-        mProfile.setCallExtraInt(ImsCallProfile.EXTRA_OIR, call.numberPresentation)
-        mProfile.setCallExtra(
+        //mProfile.setCallExtraInt(ImsCallProfile.EXTRA_OIR, call.numberPresentation)
+        /*mProfile.setCallExtra(
             ImsCallProfile.EXTRA_CNA,
             if (call.name.isEmpty()) mProfile.getCallExtra(ImsCallProfile.EXTRA_OI) else call.name
-        )
-        mProfile.setCallExtraInt(ImsCallProfile.EXTRA_CNAP, call.namePresentation)
+        )*/
+        //mProfile.setCallExtraInt(ImsCallProfile.EXTRA_CNAP, call.namePresentation)
 
-        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall) {
+        if (lastState == mState /*state unchanged*/ && nState != 6 /*END*/) {
             listener?.callSessionUpdated(mProfile)
         }
-        rilImsCall = call
+        mRILState = nState
+        mIndex = nIndex
+
     }
 
     private fun die(reason: ImsReasonInfo) {
-        if (rilImsCall != null)
-            calls.remove(rilImsCall!!.index)
+        if (mIndex != -1)
+            calls.remove(mIndex)
         awaitingIdFromRIL.remove(mCallee)
         mState = State.TERMINATED
         mInCall = false
@@ -157,7 +160,7 @@ class MtImsCallSession
     }
 
     override fun getCallId(): String {
-        return "slot" + mSlotId + "id" + if (rilImsCall == null) "unknown!" + Integer.toString(mCount) else rilImsCall!!.index
+        return "slot" + mSlotId + "id" + if (mIndex != -1) "unknown!" + Integer.toString(mCount) else mIndex
     }
 
     override fun getCallProfile(): ImsCallProfile {
@@ -186,8 +189,8 @@ class MtImsCallSession
         return mInCall
     }
 
-    fun notifyConfDone(call: Call) {
-        listener?.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, call))
+    fun notifyConfDone(index: Int, callState: Int, number: String) {
+        listener?.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, index, callState, number))
     }
 
     override fun accept(callType: Int, profile: ImsStreamMediaProfile) {
@@ -276,7 +279,7 @@ class MtImsCallSession
                     listener?.callSessionResumed(mProfile)
                 }
                 // else, it will be handled by updateCall
-            }, mSlotId), rilImsCall!!.index)
+            }, mSlotId), mIndex)
     }
 
     override fun startConference(participants: Array<out String>, profile: ImsCallProfile) {
@@ -296,7 +299,7 @@ class MtImsCallSession
                     listener?.callSessionHoldFailed(ImsReasonInfo())
                 }
                 // Else, it will be handled by updateCall
-            }, mSlotId), rilImsCall!!.index)
+            }, mSlotId), mIndex)
     }
 
 
@@ -308,7 +311,7 @@ class MtImsCallSession
                     listener?.callSessionResumeFailed(ImsReasonInfo())
                 }
                 // Else, it will be handled by updateCall
-            }, mSlotId), rilImsCall!!.index)
+            }, mSlotId), mIndex)
     }
 
     companion object {
