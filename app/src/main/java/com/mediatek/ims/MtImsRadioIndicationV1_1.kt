@@ -375,8 +375,8 @@ class MtImsRadioIndicationV1_1(private val mSlotId: Int) : IImsRadioIndication.S
     }
 
     override fun dataCallListChanged(p0: Int, p1: ArrayList<SetupDataCallResult>?) {
-        Rlog.w(tag, "dataCallListChanged($p0, $p1)")
-        //TODO?
+        Rlog.v(tag, "dataCallListChanged($p0, $p1)")
+        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
     companion object {
