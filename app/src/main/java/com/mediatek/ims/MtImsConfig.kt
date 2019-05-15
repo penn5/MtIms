@@ -28,18 +28,22 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                     Rlog.e(tag, "Failed to setVolteEnable to user optin status, $radioResponseInfo $data")
                 } else {
                     Rlog.d(tag, "setVolteEnable success for user optin status")
-                    notifyProvisionedValueChanged(item, value)
                 }
+
+                RilHolder.getRadio(mSlotId).setVoiceDomainPreference(
+                    RilHolder.callback({ radioResponseInfo2: RadioResponseInfo, data2: Array<out Any?> ->
+                        if (radioResponseInfo2.error != 0) {
+                            Rlog.e(tag, "Failed to setVoiceDomainPreference, $radioResponseInfo2 $data2")
+                        } else {
+                            Rlog.d(tag, "setVoiceDomainPreference success yay")
+                            notifyProvisionedValueChanged(item, value)
+                        }
+                    }, mSlotId),
+                    value
+                ) // User opt in status is 0 (false/CS) or 1 (true/PS) but android.telephony.NetworkRegistrationState says we should use 1 (false/CS) or 2 (true/PS)
             }, mSlotId), value > 0)
-        } else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS)
-            RilHolder.getRadio(mSlotId).setVoiceDomainPreference(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
-                if (radioResponseInfo.error != 0) {
-                    Rlog.e(tag, "Failed to setVoiceDomainPreference, $radioResponseInfo $data")
-                } else {
-                    Rlog.d(tag, "setVoiceDomainPreference success yay")
-                    notifyProvisionedValueChanged(item, value)
-                }
-            }, mSlotId), value + 1) // User opt in status is 0 (false/CS) or 1 (true/PS) but android.telephony.NetworkRegistrationState says we should use 1 (false/CS) or 2 (true/PS)
+        } else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS) {
+        }
         else
             notifyProvisionedValueChanged(item, value)
         return ImsConfig.OperationStatusConstants.SUCCESS
