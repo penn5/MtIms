@@ -38,8 +38,7 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                             Rlog.d(tag, "setVoiceDomainPreference success yay")
                             notifyProvisionedValueChanged(item, value)
                         }
-                    }, mSlotId),
-                    value
+                    }, mSlotId), value + 1
                 ) // User opt in status is 0 (false/CS) or 1 (true/PS) but android.telephony.NetworkRegistrationState says we should use 1 (false/CS) or 2 (true/PS)
             }, mSlotId), value > 0)
         } else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS) {
