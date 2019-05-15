@@ -226,6 +226,7 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun callInfoIndication(type: Int, data: ArrayList<String>?) {
         Rlog.v(tag, "callInfoIndication($type, $data)") //TODO PII
+        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
         // This is gotten from Mtk ImsService, but written by me
         data?.let {
             if (data.size > 0) {
@@ -273,7 +274,6 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
                 }
             }
         }
-        RilHolder.getRadio(mSlotId).getCurrentCalls(RilHolder.getNextSerial())
     }
 
     override fun newSmsOnSim(p0: Int, p1: Int) {
