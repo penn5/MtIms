@@ -274,9 +274,8 @@ class MtImsCallSession
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to terminate call! $radioResponseInfo $data")
                     listener?.callSessionResumed(mProfile)
-                } else {
-                    listener?.callSessionTerminated(ImsReasonInfo())
                 }
+                // else, it will be handled by updateCall
             }, mSlotId), rilImsCall!!.index)
     }
 
