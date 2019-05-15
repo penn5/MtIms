@@ -358,6 +358,7 @@ class MtImsRadioResponseV2_0(val mSlotId: Int) : IImsRadioResponse.Stub() {
 
     override fun getCurrentCallsResponse(p0: RadioResponseInfo?, arrayList: ArrayList<Call>?) {
         //onResponse(p0, p1)
+        Rlog.d(tag, "getCurrentCallsResponse got ${arrayList?.size} calls!")
         synchronized(MtImsCallSession.sCallsLock) {
             val calls = ArrayList<Int>(arrayList!!.size)
             for (call in arrayList) {

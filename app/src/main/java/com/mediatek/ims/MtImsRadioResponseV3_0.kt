@@ -35,7 +35,8 @@ class MtImsRadioResponseV3_0(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     override fun getCurrentCallsResponse_1_2(p0: RadioResponseInfo?, p1: ArrayList<Call>?) {
-        onResponse(p0, p1)
+        getCurrentCallsResponse(p0, p1?.map { it.base } as? ArrayList)
+        // Who cares about the quality? Dump it.
     }
 
     override fun setRcsUaEnableResponse(p0: RadioResponseInfo?) {
@@ -451,6 +452,7 @@ class MtImsRadioResponseV3_0(val mSlotId: Int) : IImsRadioResponse.Stub() {
         arrayList: ArrayList<android.hardware.radio.V1_0.Call>?
     ) {
         //onResponse(p0, p1)
+        Rlog.d(tag, "getCurrentCallsResponse got ${arrayList?.size} calls!")
         synchronized(MtImsCallSession.sCallsLock) {
             val calls = ArrayList<Int>(arrayList!!.size)
             for (call in arrayList) {
