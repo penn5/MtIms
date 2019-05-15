@@ -245,12 +245,10 @@ class MtImsCallSession
             RilHolder.getRadio(mSlotId).dial(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error == 0) {
                     Rlog.d(tag, "successfully placed call")
-                    /*
                     mInCall = true
                     mState = State.ESTABLISHED
                     listener?.callSessionInitiated(profile)
-                    It's done by updateState hopefully
-                    */
+//                    It's done by updateState hopefully?
                 } else {
                     Rlog.e(tag, "Call failed")
                     mState = State.TERMINATED
@@ -295,8 +293,11 @@ class MtImsCallSession
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to hold call! $radioResponseInfo $data")
                     listener?.callSessionHoldFailed(ImsReasonInfo())
+                } else {
+                    Rlog.d(tag, "Held call!")
+                    listener?.callSessionHeld(mProfile)
                 }
-                // Else, it will be handled by updateCall
+                // Else, it will be handled by updateCall?
             }, mSlotId), rilImsCall!!.index)
     }
 
@@ -307,8 +308,10 @@ class MtImsCallSession
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to resume call! $radioResponseInfo $data")
                     listener?.callSessionResumeFailed(ImsReasonInfo())
-                }
-                // Else, it will be handled by updateCall
+                } else {
+                    Rlog.d(tag, "Resumed call!")
+                    listener?.callSessionResumed(mProfile)
+                // Else, it will be handled by updateCall?
             }, mSlotId), rilImsCall!!.index)
     }
 
