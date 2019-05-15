@@ -2,7 +2,6 @@ package com.mediatek.ims
 
 import android.hardware.radio.V1_0.Dial
 
-
 class IRadioDelegator {
     private var mIRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio? = null
     private var mIRadio2: vendor.mediatek.hardware.radio.V2_0.IRadio? = null
@@ -132,5 +131,10 @@ class IRadioDelegator {
         mIRadio3?.resumeCall(serial, index)
         mIRadio2?.resumeCall(serial, index)
         mIRadio1?.resumeCall(serial, index)
+    }
+    fun setVoiceDomainPreference(serial: Int, /*@NetworkRegistrationInfo.Domain @NetworkRegistrationState.Domain*/ preference: Int) {
+        mIRadio3?.setVoiceDomainPreference(serial, preference)
+        mIRadio2?.setVoiceDomainPreference(serial, preference)
+        mIRadio1?.setVoiceDomainPreference(serial, preference)
     }
 }

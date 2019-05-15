@@ -2,6 +2,7 @@ package com.mediatek.ims
 
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
+import com.android.ims.ImsConfig
 
 class MtImsRegistration(val mSlotId: Int) : ImsRegistrationImplBase() {
 
@@ -9,6 +10,7 @@ class MtImsRegistration(val mSlotId: Int) : ImsRegistrationImplBase() {
 
     fun notifyRegistered(@ImsRegistrationTech imsRadioTech: Int) {
         this.onRegistered(imsRadioTech)
+        MtImsService.instance!!.getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, 1)
     }
 
     fun notifyRegistering(@ImsRegistrationTech imsRadioTech: Int) {

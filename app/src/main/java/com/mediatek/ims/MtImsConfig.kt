@@ -12,17 +12,10 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
     private val configInt = ConcurrentHashMap<Int, Int>()
     private val configString = ConcurrentHashMap<Int, String>()
 
-    init {
-        // We support VoLTE by default.
-        configInt[ImsConfig.ConfigConstants.VLT_SETTING_ENABLED] = ImsConfig.FeatureValueConstants.ON
-        // We don't yet support WFC
-        //configInt[ImsConfig.ConfigConstants.VOICE_OVER_WIFI_SETTING_ENABLED] = ImsConfig.FeatureValueConstants.ON
-    }
-
     override fun setConfig(item: Int, value: Int): Int {
         configInt[item] = value
         Log.d(tag, "Setting config int $item=$value")
-        if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS)
+        if (item == ImsConfig.ConfigConstants.VLT_SETTING_ENABLED)
             RilHolder.getRadio(mSlotId).setImsVoiceEnable(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to setImsVoiceEnable to user optin status, $radioResponseInfo $data")
@@ -31,6 +24,15 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                     notifyProvisionedValueChanged(item, value)
                 }
             }, mSlotId), value > 0)
+        else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS)
+            RilHolder.getRadio(mSlotId).setVoiceDomainPreference(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(tag, "Failed to setVoiceDomainPreference, $radioResponseInfo $data")
+                } else {
+                    Rlog.d(tag, "setVoiceDomainPreference success yay")
+                    notifyProvisionedValueChanged(item, value)
+                }
+            }, mSlotId), value + 1) // User opt in status is 0 (false/CS) or 1 (true/PS) but android.telephony.NetworkRegistrationState says we should use 1 (false/CS) or 2 (true/PS)
         else
             notifyProvisionedValueChanged(item, value)
         return ImsConfig.OperationStatusConstants.SUCCESS
@@ -52,7 +54,6 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
         Log.d(tag, "Returning config string $item=${configString[item]}")
         return configString[item]
     }
-
     companion object {
         const val tag = "MtImsConfig"
     }
