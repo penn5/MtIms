@@ -137,4 +137,9 @@ class IRadioDelegator {
         mIRadio2?.setVoiceDomainPreference(serial, preference)
         mIRadio1?.setVoiceDomainPreference(serial, preference)
     }
+    fun setVolteEnable(serial: Int, volte: Boolean) {
+        mIRadio3?.setVolteEnable(serial, volte)
+        mIRadio2?.setVolteEnable(serial, volte)
+        mIRadio1?.setVolteEnable(serial, volte)
+    }
 }

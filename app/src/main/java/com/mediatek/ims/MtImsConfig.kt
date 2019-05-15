@@ -15,16 +15,23 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
     override fun setConfig(item: Int, value: Int): Int {
         configInt[item] = value
         Log.d(tag, "Setting config int $item=$value")
-        if (item == ImsConfig.ConfigConstants.VLT_SETTING_ENABLED)
+        if (item == ImsConfig.ConfigConstants.VLT_SETTING_ENABLED) {
             RilHolder.getRadio(mSlotId).setImsVoiceEnable(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to setImsVoiceEnable to user optin status, $radioResponseInfo $data")
                 } else {
                     Rlog.d(tag, "setImsVoiceEnable success for user optin status")
+                }
+            }, mSlotId), value > 0)
+            RilHolder.getRadio(mSlotId).setVolteEnable(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(tag, "Failed to setVolteEnable to user optin status, $radioResponseInfo $data")
+                } else {
+                    Rlog.d(tag, "setVolteEnable success for user optin status")
                     notifyProvisionedValueChanged(item, value)
                 }
             }, mSlotId), value > 0)
-        else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS)
+        } else if (item == ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS)
             RilHolder.getRadio(mSlotId).setVoiceDomainPreference(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(tag, "Failed to setVoiceDomainPreference, $radioResponseInfo $data")
