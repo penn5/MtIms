@@ -48,14 +48,14 @@ class MtImsService : ImsService() {
         return mmTelFeatures[slotId]!!
     }
 
-    override fun getConfig(slotId: Int): ImsConfigImplBase {
+    override fun getConfig(slotId: Int): MtImsConfig {
         if (configs[slotId] == null) {
             configs[slotId] = MtImsConfig(slotId)
         }
         return configs[slotId]!!
     }
 
-    override fun getRegistration(slotId: Int): ImsRegistrationImplBase {
+    override fun getRegistration(slotId: Int): MtImsRegistration {
         if (this.registrations[slotId] == null) {
             registrations[slotId] = MtImsRegistration(slotId)
         }
