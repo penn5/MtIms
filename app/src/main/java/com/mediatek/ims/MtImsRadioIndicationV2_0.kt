@@ -240,7 +240,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsDeregDone(p0: Int) {
         Rlog.d(tag, "imsDeregDone($p0)")
-        MtImsService.instance!!.getRegistration(mSlotId).onDeregistered(ImsReasonInfo())
+        MtImsService.instance!!.getRegistration(mSlotId).notifyDeregistered(ImsReasonInfo())
     }
 
     override fun stkCallSetup(p0: Int, p1: Long) {
@@ -254,7 +254,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsEnableStart(p0: Int) {
         Rlog.d(tag, "imsEnableStart($p0)")
-        MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
+        MtImsService.instance!!.getRegistration(mSlotId).notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
         MtImsService.instance!!.createMmTelFeature(mSlotId).setVoiceRegistered(true)
     }
 
@@ -307,7 +307,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
     override fun volteSetting(p0: Int, p1: Boolean) {
         Rlog.e(tag, "volteSetting($p0, $p1)")
         if (p1)
-            MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
+            MtImsService.instance!!.getRegistration(mSlotId).notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
     }
 
     override fun stkCallControlAlphaNotify(p0: Int, p1: String?) {
@@ -325,7 +325,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsEnableDone(p0: Int) {
         Rlog.d(tag, "imsEnableDone($p0)")
-        MtImsService.instance!!.getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE)
+        MtImsService.instance!!.getRegistration(mSlotId).notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE)
         MtImsService.instance!!.createMmTelFeature(mSlotId).setVoiceRegistered(true)
     }
 
@@ -348,7 +348,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsDisableDone(p0: Int) {
         Rlog.d(tag, "imsDisableDone($p0)")
-        MtImsService.instance!!.getRegistration(mSlotId).onDeregistered(ImsReasonInfo())
+        MtImsService.instance!!.getRegistration(mSlotId).notifyDeregistered(ImsReasonInfo())
     }
 
     override fun sipCallProgressIndicator(

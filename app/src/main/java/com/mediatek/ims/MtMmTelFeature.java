@@ -52,7 +52,7 @@ public class MtMmTelFeature extends MmTelFeature {
     }
 
     public void registerIms() {
-        MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistering(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
+        MtImsService.Companion.getInstance().getRegistration(mSlotId).notifyRegistering(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
         RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
             if (resp1.error != 0)
                 Log.e(LOG_TAG, "Failed to initialize IMS, see earlier logs from RilHolder for error code");
@@ -65,7 +65,7 @@ public class MtMmTelFeature extends MmTelFeature {
                                 MmTelCapabilities capabilities = new MmTelCapabilities();
                                 capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
                                 notifyCapabilitiesStatusChanged(capabilities);
-                                MtImsService.Companion.getInstance().getRegistration(mSlotId).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
+                                MtImsService.Companion.getInstance().getRegistration(mSlotId).notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_NONE);
                             }
                             return null;
                         }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
@@ -81,7 +81,7 @@ public class MtMmTelFeature extends MmTelFeature {
         RilHolder.INSTANCE.getRadio(mSlotId).setImsEnable(RilHolder.INSTANCE.callback((resp1, unused1) -> {
             if (resp1.error != 0)
                 Log.e(LOG_TAG, "Failed to deinitialize IMS, see earlier logs from RilHolder for error code");
-            MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+            MtImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
             RilHolder.INSTANCE.getRadio(mSlotId).setImscfg(RilHolder.INSTANCE.callback((resp2, unused2) -> {
                         if (resp2.error != 0)
                             Log.e(LOG_TAG, "Failed to setImscfg, see earlier logs from RilHolder for error code");
@@ -89,7 +89,7 @@ public class MtMmTelFeature extends MmTelFeature {
                             MmTelCapabilities capabilities = new MmTelCapabilities();
                             capabilities.addCapabilities(0);
                             notifyCapabilitiesStatusChanged(capabilities);
-                            MtImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+                            MtImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
                         }
                         return null;
                     }, mSlotId), /* VoLTE */ false, /* ViLTE */ false,
