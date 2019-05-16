@@ -2,11 +2,7 @@ package com.mediatek.ims
 
 import android.hardware.radio.V1_0.*
 import android.hardware.radio.V1_1.KeepaliveStatus
-import android.os.Bundle
 import android.telephony.Rlog
-import android.telephony.ims.ImsCallProfile
-import android.util.Log
-import com.android.ims.ImsManager
 import vendor.mediatek.hardware.radio.V2_0.CallForwardInfoEx
 import vendor.mediatek.hardware.radio.V2_0.IImsRadioResponse
 import java.util.*
@@ -356,81 +352,8 @@ class MtImsRadioResponseV2_0(val mSlotId: Int) : IImsRadioResponse.Stub() {
         onResponse(p0, p1)
     }
 
-    override fun getCurrentCallsResponse(p0: RadioResponseInfo?, arrayList: ArrayList<Call>?) {
-        //onResponse(p0, p1)
-        Rlog.d(tag, "getCurrentCallsResponse got ${arrayList?.size} calls!")
-        synchronized(MtImsCallSession.sCallsLock) {
-            val calls = ArrayList<Int>(arrayList!!.size)
-            for (call in arrayList) {
-                Log.d(tag, "calls list contains $call") //TODO PII
-                // RIL sometimes gives us the leading +, so first try with one, and if its null, try again without the +.
-                var session = MtImsCallSession.awaitingIdFromRIL["+" + call.number]
-                if (session == null)
-                    session = MtImsCallSession.awaitingIdFromRIL[call.number]
-                if (session != null) {
-                    Rlog.d(tag, "giving call id from ril.")
-                    session.addIdFromRIL(call)
-                }
-                session = MtImsCallSession.calls[call.index]
-                if (session == null) {
-                    if (call.isMT) {
-                        Log.d(tag, "Notifying MmTelFeature incoming call! $call") //TODO PII
-                        // An incoming call that we have never seen before, tell the framework.
-                    } else {
-                        Log.e(tag, "Phantom Call!!!! $call") //TODO PII
-                        MtImsCallSession.calls.forEach { (s, hwImsCallSession) ->
-                            Rlog.d(
-                                tag,
-                                "Phantom debugging got call in static calls " + hwImsCallSession.rilImsCall!! + " with number " + s
-                            )
-                        } //TODO PII
-                        MtImsCallSession.awaitingIdFromRIL.forEach { (s, hwImsCallSession) ->
-                            Rlog.d(
-                                tag,
-                                "Phantom debugging got call in static awaiting " + hwImsCallSession.mCallee + " with number " + s
-                            )
-                        }
-                        // Someone has been talking to AT... naughty.
-                    }
-                    val extras = Bundle()
-                    val callSession = MtImsCallSession(mSlotId, ImsCallProfile(), call)
-                    extras.putInt(ImsManager.EXTRA_PHONE_ID, mSlotId)
-                    extras.putString(ImsManager.EXTRA_CALL_ID, callSession.callId)
-                    extras.putBoolean(
-                        ImsManager.EXTRA_IS_UNKNOWN_CALL,
-                        !call.isMT
-                    ) // A new outgoing call should never happen. Someone is playing with AT commands or talking to the modem.
-                    MtImsService.instance!!.createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras)
-
-
-                } else {
-                    // Existing call, update it's data.
-                    session.updateCall(call)
-                }
-                if (call.isMpty && call.state == 2) { // Dialing & Multiparty
-                    // It is a new conference call being added.
-                    for (confSession in MtImsCallSession.calls.values) {
-                        if (confSession.isMultiparty) {
-                            Rlog.d(tag, "adding call " + call.index + " to conference " + confSession.callId)
-                            confSession.notifyConfDone(call)
-                            break
-                        }
-                    }
-                }
-                calls.add(call.index)
-            }
-            for ((_, value) in MtImsCallSession.calls) {
-                if (!calls.contains(value.rilImsCall!!.index)) {
-                    try {
-                        Rlog.d(tag, "notifying dead call " + value.rilImsCall!!) //TODO PII
-                        value.notifyEnded()
-                    } catch (e: RuntimeException) {
-                        Rlog.e(tag, "error notifying dead call!", e)
-                    }
-
-                }
-            }
-        }
+    override fun getCurrentCallsResponse(p0: RadioResponseInfo?, p1: ArrayList<Call>?) {
+        onResponse(p0, p1)
     }
 
     override fun setViWifiEnableResponse(p0: RadioResponseInfo?) {

@@ -4,7 +4,6 @@ import android.hardware.radio.V1_0.*
 import android.telephony.Rlog
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
-import com.mediatek.ims.MtkConstants
 import vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
 import vendor.mediatek.hardware.radio.V1_1.IncomingCallNotification
 
@@ -127,7 +126,7 @@ class MtImsRadioIndicationV1_1(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun callInfoIndication(type: Int, data: ArrayList<String>?) {
         Rlog.v(tag, "callInfoIndication($type, $data)") //TODO PII
-        ParseUtil.parseCallInfoIndication(data)
+        ParseUtil.parseCallInfoIndication(mSlotId, data)
     }
 
     override fun newSmsOnSim(p0: Int, p1: Int) {
@@ -158,7 +157,7 @@ class MtImsRadioIndicationV1_1(private val mSlotId: Int) : IImsRadioIndication.S
     override fun incomingCallIndication(type: Int, call: IncomingCallNotification?) {
         Rlog.d(tag, "incomingCallIndication($type, $call)") // TODO PII
         call?.let {
-            ParseUtil.parseIncomingCallIndication(it.callId, it.callMode, it.number, it.redirectNumber, it.seqNo, it.type)
+            ParseUtil.parseIncomingCallIndication(mSlotId, it.callId, it.number)
         }
     }
 

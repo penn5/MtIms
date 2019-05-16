@@ -224,7 +224,7 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun callInfoIndication(type: Int, data: ArrayList<String>?) {
         Rlog.v(tag, "callInfoIndication($type, $data)") //TODO PII
-        ParseUtil.parseCallInfoIndication(data)
+        ParseUtil.parseCallInfoIndication(mSlotId, data)
     }
 
     override fun newSmsOnSim(p0: Int, p1: Int) {
@@ -255,7 +255,7 @@ class MtImsRadioIndicationV3_0(private val mSlotId: Int) : IImsRadioIndication.S
     override fun incomingCallIndication(type: Int, call: IncomingCallNotification?) {
         Rlog.d(tag, "incomingCallIndication($type, $call)") // TODO PII
         call?.let {
-            ParseUtil.parseIncomingCallIndication(it.callId, it.callMode, it.number, it.redirectNumber, it.seqNo, it.type)
+            ParseUtil.parseIncomingCallIndication(mSlotId, it.callId, it.number)
         }
     }
 

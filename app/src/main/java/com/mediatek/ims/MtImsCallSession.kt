@@ -23,7 +23,6 @@ class MtImsCallSession
     private var listener: ImsCallSessionListener? = null
 
     private var mIndex: Int = -1
-    private var mRILState: Int = -1
     var mCallee: String = ""
 
     private var mInCall = false
@@ -43,19 +42,30 @@ class MtImsCallSession
     }
 
     // For incoming (MT) calls
-    constructor(slotId: Int, profile: ImsCallProfile, index: Int, state: Int, number: String) : this(slotId, profile) {
-        updateCall(index, state, number)
+    constructor(slotId: Int, profile: ImsCallProfile, index: Int, number: String) : this(slotId, profile) {
+        updateCall(index, number)
+        mState = State.ESTABLISHED
         calls[index] = this
     }
 
-    fun addIdFromRIL(index: Int, state: Int, number: String) {
+    fun notifyAlerting() {
+        mState = State.NEGOTIATING
+        listener?.callSessionProgressing(ImsStreamMediaProfile())
+    }
+
+    fun notifyHolding() {
+        listener?.callSessionHoldReceived(mProfile)
+    }
+
+
+    fun addIdFromRIL(index: Int, number: String) {
         synchronized(sCallsLock) {
             var worked = awaitingIdFromRIL.remove("+$number", this)
             if (!worked)
                 worked = awaitingIdFromRIL.remove(number, this)
             if (worked) {
                 synchronized(mCallIdLock) {
-                    updateCall(index, state, number)
+                    updateCall(index, number)
                     calls[index] = this
                     mCallIdLock.notify()
                 }
@@ -64,52 +74,7 @@ class MtImsCallSession
     }
 
     @SuppressLint("MissingPermission")
-    fun updateCall(nIndex: Int, nState: Int, nNumber: String) {
-        val lastState = mState
-        when (nState) {
-            0 // ACTIVE
-            -> if (mIndex == -1) {
-                mState = State.ESTABLISHED
-                listener?.callSessionInitiated(mProfile)
-            } else if (mRILState == 2 || // DIALING
-
-                mRILState == 3 || // ALERTING
-
-                mRILState == 4 || // INCOMING
-
-                mRILState == 5
-            ) { // WAITING
-                mState = State.ESTABLISHED
-                listener?.callSessionInitiated(mProfile)
-            } else if (mRILState == 1 /* HOLDING */ && !confInProgress) { // HOLDING
-                listener?.callSessionResumed(mProfile)
-            } else {
-                Rlog.e(tag, "stuff")
-            }
-            1 // HOLDING
-            -> listener?.callSessionHeld(mProfile)
-            2 // DIALING
-            -> listener?.callSessionProgressing(ImsStreamMediaProfile())
-            3 // ALERTING
-            -> {
-                mState = State.NEGOTIATING
-                if (mIndex == -1) {
-                    Rlog.e(tag, "Alerting an incoming call wtf?")
-                }
-                listener?.callSessionProgressing(ImsStreamMediaProfile())
-            }
-            4 // INCOMING
-                , 5 // WAITING
-            -> {
-            }
-            6 // END
-            -> {
-                mState =
-                    State.TERMINATED
-                die(ImsReasonInfo())
-            }
-        }
-
+    fun updateCall(nIndex: Int, nNumber: String) {
         val subId = MtImsService.instance!!.subscriptionManager
             .getActiveSubscriptionInfoForSimSlotIndex(mSlotId).subscriptionId
 
@@ -133,13 +98,8 @@ class MtImsCallSession
             if (call.name.isEmpty()) mProfile.getCallExtra(ImsCallProfile.EXTRA_OI) else call.name
         )*/
         //mProfile.setCallExtraInt(ImsCallProfile.EXTRA_CNAP, call.namePresentation)
-
-        if (lastState == mState /*state unchanged*/ && nState != 6 /*END*/) {
-            listener?.callSessionUpdated(mProfile)
-        }
-        mRILState = nState
         mIndex = nIndex
-
+        mCallee = nNumber
     }
 
     private fun die(reason: ImsReasonInfo) {
@@ -189,8 +149,8 @@ class MtImsCallSession
         return mInCall
     }
 
-    fun notifyConfDone(index: Int, callState: Int, number: String) {
-        listener?.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, index, callState, number))
+    fun notifyConfDone(index: Int, number: String) {
+        listener?.callSessionMergeComplete(MtImsCallSession(mSlotId, mProfile, index, number))
     }
 
     override fun accept(callType: Int, profile: ImsStreamMediaProfile) {
