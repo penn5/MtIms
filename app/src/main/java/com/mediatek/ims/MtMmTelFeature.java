@@ -70,7 +70,9 @@ public class MtMmTelFeature extends MmTelFeature {
                             return null;
                         }, mSlotId), /* VoLTE */ true, /* ViLTE */ false,
                         /* VoWiFi */ false, /* ViWiFi */ false,
-                        /* SMS */ false, /* "eims" */ true);
+                        /* SMS? That's what the files call it, but it seems not as stock checks the prop
+                        persist.vendor.ims_support to determine value... We turn it on because stock does the same.
+                        */ true, /* "eims" */ true);
             }
             return null;
         }, mSlotId), true);
