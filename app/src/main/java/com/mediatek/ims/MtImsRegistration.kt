@@ -11,6 +11,7 @@ class MtImsRegistration(val mSlotId: Int) : ImsRegistrationImplBase() {
     fun notifyRegistered(@ImsRegistrationTech imsRadioTech: Int) {
         this.onRegistered(imsRadioTech)
         MtImsService.instance!!.getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, 1)
+        MtImsService.instance!!.getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS, 1)
     }
 
     fun notifyRegistering(@ImsRegistrationTech imsRadioTech: Int) {
@@ -19,5 +20,6 @@ class MtImsRegistration(val mSlotId: Int) : ImsRegistrationImplBase() {
 
     fun notifyDeregistered(info: ImsReasonInfo) {
         this.onDeregistered(info)
+        MtImsService.instance!!.getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, 0)
     }
 }
