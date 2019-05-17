@@ -14,10 +14,10 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
 
     override fun setConfig(item: Int, value: Int): Int {
         configInt[item] = value
-        RilHolder.getRadio(mSlotId).setConfig(-1, item, value.toString())
         Log.d(tag, "Setting config int $item=$value")
         when (item) {
             ImsConfig.ConfigConstants.VLT_SETTING_ENABLED -> {
+                RilHolder.getRadio(mSlotId).setConfig(-1, item, value.toString())
                 RilHolder.getRadio(mSlotId)
                     .setImsVoiceEnable(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
                         if (radioResponseInfo.error != 0) {
@@ -47,6 +47,7 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                     }, mSlotId), value > 0)
             }
             ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS -> {
+                RilHolder.getRadio(mSlotId).setConfig(-1, item, value.toString())
             }
             else -> notifyProvisionedValueChanged(item, value)
         }
