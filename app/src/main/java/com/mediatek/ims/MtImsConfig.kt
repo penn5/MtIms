@@ -17,7 +17,7 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
         Log.d(tag, "Setting config int $item=$value")
         when (item) {
             ImsConfig.ConfigConstants.VLT_SETTING_ENABLED -> {
-                RilHolder.getRadio(mSlotId).setConfig(-1, item, value.toString())
+                RilHolder.getRadio(mSlotId).setConfig(-1, ImsConfig.FeatureConstants.FEATURE_TYPE_VOICE_OVER_LTE, value.toString())
                 RilHolder.getRadio(mSlotId)
                     .setImsVoiceEnable(RilHolder.callback({ radioResponseInfo: RadioResponseInfo, data: Array<out Any?> ->
                         if (radioResponseInfo.error != 0) {
@@ -47,7 +47,7 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                     }, mSlotId), value > 0)
             }
             ImsConfig.ConfigConstants.VOLTE_USER_OPT_IN_STATUS -> {
-                RilHolder.getRadio(mSlotId).setConfig(-1, item, value.toString())
+                RilHolder.getRadio(mSlotId).setConfig(-1,ImsConfig.FeatureConstants.FEATURE_TYPE_VOICE_OVER_LTE, value.toString())
             }
             else -> notifyProvisionedValueChanged(item, value)
         }

@@ -145,8 +145,6 @@ class IRadioDelegator {
 
     fun setConfig(serial: Int, key: Int, value: String) {
         mIRadio3?.setImsCfgProvisionValue(serial, key, value)
-        mIRadio3?.setModemImsCfg(serial, key.toString(), value, 0)
-        mIRadio2?.setModemImsCfg(serial, key.toString(), value, 0)
     }
     companion object {
         const val tag = "MtImsRadioDelegator"
