@@ -271,6 +271,7 @@ class MtImsRadioIndicationV1_1(private val mSlotId: Int) : IImsRadioIndication.S
     override fun imsBearerActivation(type: Int, aid: Int, capability: String?) {
         Rlog.d(tag, "imsBearerActivation($type, $aid, $capability)")
         // We don't need this. I hope.
+        RilHolder.getRadio(mSlotId).imsBearerActivationDone(-1, aid, capability!!.toInt())
     }
 
     override fun resendIncallMute(p0: Int) {
