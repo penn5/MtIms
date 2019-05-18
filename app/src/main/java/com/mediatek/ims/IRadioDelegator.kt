@@ -59,6 +59,24 @@ class IRadioDelegator {
             indication as? vendor.mediatek.hardware.radio.V1_1.IImsRadioIndication
         )
     }
+
+    fun setResponseFunctionsMtk(
+        response: android.hardware.radio.V1_0.IRadioResponse?,
+        indication: android.hardware.radio.V1_0.IRadioIndication?
+    ) {
+        mIRadio3?.setResponseFunctionsMtk(
+            response as vendor.mediatek.hardware.radio.V3_0.IRadioResponse,
+            indication as vendor.mediatek.hardware.radio.V3_0.IRadioIndication
+        )
+        mIRadio2?.setResponseFunctionsMtk(
+            response as? vendor.mediatek.hardware.radio.V2_0.IRadioResponse,
+            indication as? vendor.mediatek.hardware.radio.V2_0.IRadioIndication
+        )
+        mIRadio1?.setResponseFunctionsMtk(
+            response as? vendor.mediatek.hardware.radio.V1_1.IRadioResponse,
+            indication as? vendor.mediatek.hardware.radio.V1_1.IRadioIndication
+        )
+    }
     fun setImscfg(
         serial: Int,
         volte: Boolean,
@@ -150,6 +168,11 @@ class IRadioDelegator {
         mIRadio3?.imsBearerActivationDone(serial, aid, status)
         mIRadio2?.imsBearerActivationDone(serial, aid, status)
         mIRadio1?.imsBearerActivationDone(serial, aid, status)
+    }
+
+    fun sendATCommand(serial: Int, cmd: String) {
+        mIRadio3?.sendRequestStrings(serial, arrayListOf(cmd))
+        mIRadio2?.sendRequestStrings(serial, arrayListOf(cmd))
     }
     companion object {
         const val tag = "MtImsRadioDelegator"

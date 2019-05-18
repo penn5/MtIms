@@ -53,7 +53,7 @@ class MtImsConfig(private val mSlotId: Int) : ImsConfigImplBase() {
                             }
                         }, mSlotId), when (value) {
                             0 -> 2 // CS priority, PS fallback
-                            else -> 3 // PS priority, CS fallback
+                            else -> 4 // PS only
                         }
                     )
             }
