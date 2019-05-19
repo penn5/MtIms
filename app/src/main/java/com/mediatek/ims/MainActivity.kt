@@ -28,11 +28,17 @@ class MainActivity : Activity() {
                 runOnUiThread {
                     atout.text = "${atout.text}\n\n$time: AT response $radioResponseInfo:"
                     @Suppress("UNCHECKED_CAST")
-                    val atLines = data[0] as? ArrayList<String>
-                    atLines?.let {
-                        for (line in it) {
-                            atout.text = "${atout.text}\n\t$line"
-                            atout.invalidate()
+                    if (data.isEmpty())
+                        atout.text = "${atout.text}\n\tNo data."
+                    else {
+                        val atLines = data[0] as? ArrayList<String>
+                        if (atLines != null) {
+                            for (line in atLines) {
+                                atout.text = "${atout.text}\n\t$line"
+                                atout.invalidate()
+                            }
+                        } else {
+                            atout.text = "${atout.text}\n\tNull or malformed data"
                         }
                     }
                 }
