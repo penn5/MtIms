@@ -92,10 +92,13 @@ class IRadioDelegator(val mSlotId: Int) {
     }
 
     fun setImsEnable(serial: Int, enable: Boolean) {
-        when (enable) {
-            // Don't ask why.
-            true -> ImsaAdapter.enableIms(mSlotId)
-            false -> ImsaAdapter.disableIms(mSlotId)
+        try {
+            when (enable) {
+                // Don't ask why.
+                true -> ImsaAdapter.enableIms(mSlotId)
+                false -> ImsaAdapter.disableIms(mSlotId)
+            }
+        } catch (_: NoSuchElementException) {
         }
         mIRadio3?.setImsEnable(serial, enable)
         mIRadio2?.setImsEnable(serial, enable)
