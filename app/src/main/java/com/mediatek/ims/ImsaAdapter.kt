@@ -17,7 +17,7 @@ object ImsaAdapter {
 
         val int: Int
             get() {
-                var ret = 0
+                var ret: Int
                 synchronized(this) {
                     ret = data[read_offset + 3].and(0xff.toByte()).toInt().toBigInteger().shl(24).or(
                         data[read_offset + 2].and(0xff.toByte()).toInt().toBigInteger().shl(16).or(
@@ -35,7 +35,7 @@ object ImsaAdapter {
 
         val short: Int
             get() {
-                var ret = 0
+                var ret: Int
                 synchronized(this) {
                     ret = data[read_offset + 1].and(0xff.toByte()).toInt().toBigInteger().shl(8)
                         .or(data[read_offset].and(0xff.toByte()).toInt().toBigInteger()).toInt()
@@ -47,7 +47,7 @@ object ImsaAdapter {
         // Notice: getByte is to get int8 type from VA, not get one byte.
         val byte: Int
             get() {
-                var ret = 0
+                var ret: Int
                 synchronized(this) {
                     ret = data[read_offset].and(0xff.toByte()).toInt()
                     read_offset += 1
