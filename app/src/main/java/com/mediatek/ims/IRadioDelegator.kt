@@ -2,7 +2,7 @@ package com.mediatek.ims
 
 import android.hardware.radio.V1_0.Dial
 
-class IRadioDelegator {
+class IRadioDelegator(val mSlotId: Int) {
     private var mIRadio1: vendor.mediatek.hardware.radio.V1_1.IRadio? = null
     private var mIRadio2: vendor.mediatek.hardware.radio.V2_0.IRadio? = null
     private var mIRadio3: vendor.mediatek.hardware.radio.V3_0.IRadio? = null
@@ -92,6 +92,11 @@ class IRadioDelegator {
     }
 
     fun setImsEnable(serial: Int, enable: Boolean) {
+        when (enable) {
+            // Don't ask why.
+            true -> ImsaAdapter.enableIms(mSlotId)
+            false -> ImsaAdapter.disableIms(mSlotId)
+        }
         mIRadio3?.setImsEnable(serial, enable)
         mIRadio2?.setImsEnable(serial, enable)
         mIRadio1?.setImsEnable(serial, enable)
@@ -171,8 +176,8 @@ class IRadioDelegator {
     }
 
     fun sendATCommand(serial: Int, cmd: String) {
-        mIRadio3?.sendRequestStrings(serial, arrayListOf(cmd))
-        mIRadio2?.sendRequestStrings(serial, arrayListOf(cmd))
+        mIRadio3?.sendRequestRaw(serial, ArrayList(cmd.toByteArray().toMutableList()))
+        mIRadio2?.sendRequestRaw(serial, ArrayList(cmd.toByteArray().toMutableList()))
     }
     companion object {
         const val tag = "MtImsRadioDelegator"

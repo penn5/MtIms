@@ -24,8 +24,8 @@ object RilHolder {
     private val blocks = ConcurrentHashMap<Int, BlockingCallback>()
 
 
-    private fun getIRadio(serviceName: String): IRadioDelegator {
-        val iRadioDelegator = IRadioDelegator()
+    private fun getIRadio(serviceName: String, slotId: Int): IRadioDelegator {
+        val iRadioDelegator = IRadioDelegator(slotId)
         try {
             iRadioDelegator.setIRadio1(vendor.mediatek.hardware.radio.V1_1.IRadio.getService(serviceName))
             version = 1
@@ -53,7 +53,7 @@ object RilHolder {
         if (radioImpls[slotId] == null) {
             try {
                 try {
-                    radioImpls[slotId] = getIRadio(serviceNames[slotId])
+                    radioImpls[slotId] = getIRadio(serviceNames[slotId], slotId)
                 } catch (e: NoSuchElementException) {
                     Log.e(tag, "Index oob in rilholder. Bail Out!!!", e)
                     val notificationManager = MtImsService.instance!!.getSystemService(NotificationManager::class.java)
