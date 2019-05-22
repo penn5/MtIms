@@ -207,8 +207,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
 
     override fun imsEnableStart(p0: Int) {
         Rlog.d(tag, "imsEnableStart($p0)")
-        MtImsService.instance!!.getRegistration(mSlotId).notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE)
-        MtImsService.instance!!.createMmTelFeature(mSlotId).setVoiceRegistered(true)
+        MtImsService.instance!!.getRegistration(mSlotId).imsEnableStart()
     }
 
     override fun enterEmergencyCallbackMode(p0: Int) {
@@ -347,7 +346,7 @@ class MtImsRadioIndicationV2_0(private val mSlotId: Int) : IImsRadioIndication.S
     }
 
     companion object {
-        const val tag = "MtImsRadioIndicationV1_1"
+        const val tag = "MtImsRadioIndicationV2_0"
     }
 
 }

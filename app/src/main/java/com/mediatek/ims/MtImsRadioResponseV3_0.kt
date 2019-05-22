@@ -857,6 +857,6 @@ class MtImsRadioResponseV3_0(val mSlotId: Int) : IImsRadioResponse.Stub() {
     }
 
     companion object {
-        const val tag = "MtImsRadioResponseV1_1"
+        const val tag = "MtImsRadioResponseV3_0"
     }
 }
